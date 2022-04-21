@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "K:Wallet V2",
+  "short_name": "K:Wallet V2",
+  "author": "kska32@gmail.com",
+  "description": "__MSG_description__",
+  "default_locale": "en",
+  "version": "1.0.0",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "notifications",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/index.js"
+  },
+  "action": {
+    "default_title": "K:Wallet V2",
+    "default_icon": "icons/k128.png"
+  },
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "linux": "Ctrl+Shift+K",
+        "windows": "Alt+Shift+K",
+        "mac": "Alt+Shift+K"
+      }
+    }
+  },
+  "icons": {
+    "16": "icons/k16.png",
+    "48": "icons/k64.png",
+    "128": "icons/k128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
