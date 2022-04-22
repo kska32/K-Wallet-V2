@@ -195,7 +195,7 @@ export default function(){
             let describes = await Promise.all([...ee.intersect]
                 .map((moduleName)=>cct.describeModule(moduleName, ee.chainidRanking.slice(-1)[0]??0)));
             let x = describes.filter((de) => 
-                (de.data?.interfaces?.length??0) > 0 && de.data?.interfaces[0] === "fungible-v2")
+                (de.data?.interfaces?.length??0) > 0 && de.data?.interfaces.includes("fungible-v2"))
                 .map(v=>v.data.name);
 
             ee.fungibleV2 = x;
