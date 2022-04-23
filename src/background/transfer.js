@@ -1,5 +1,5 @@
 import Pact from 'pact-lang-api';
-import {delay, getCurrentPrivateKey} from "./utils";
+import {delay, getCurrentPrivateKey, isObject, isString} from "./utils";
 
 
 export default function({   
@@ -38,17 +38,11 @@ export default function({
     xGasLimit = Number(xGasLimit);
     ttl = Number(ttl);
 
-    let gasStationAccount = "free-x-chain-gas";
+    let gasStationAccount = "kadena-xchain-gas"; //free-x-chain-gas
 
     const creationTime = () => (Math.round(Date.now() / 1000) - 15);
     const getPubKey = (accAddr="") => (accAddr.toLowerCase().includes("k:") ? accAddr.split(":")[1] : accAddr);
     const formatAmount = (amount) => (Math.floor(amount * 1e8) / 1e8).toFixed(8);
-
-    const isNumber = v => v?.constructor?.name === 'Number';
-    const isObject = v => v?.constructor?.name === 'Object';
-    const isArray = v => v?.constructor?.name === 'Array';
-    const isString = v => v?.constructor?.name === 'String';
-    const distinct = arr =>[...new Set(arr)];
 
     const getLocalData = (pactCode, chainId = senderChainId) => {
         return Promise.race([
@@ -69,10 +63,10 @@ export default function({
         const cmds = [
             {
                 keyPairs: [],
-                pactCode: `(${tokenAddress}.create-account ${JSON.stringify(accountName)} (read-keyset 'account-keyset))`,
+                pactCode: `(${tokenAddress}.create-account ${JSON.stringify(accountName)} (read-keyset 'kwalletv2)`,
                 networkId: networkId,
                 envData: {
-                    "account-keyset": {
+                    "kwalletv2": {
                         "keys": keys, 
                         "pred": pred
                     }
@@ -95,15 +89,15 @@ export default function({
     
     const transferCrosschain = async (guard)=>{
             const cmds = [{
-                    pactCode: `(${tokenAddress}.transfer-crosschain ${JSON.stringify(senderAccountName)} ${JSON.stringify(receiverAccountName)} (read-keyset "own-ks") ${JSON.stringify(receiverChainId)} ${formatAmount(amount)})`,
+                    pactCode: `(${tokenAddress}.transfer-crosschain ${JSON.stringify(senderAccountName)} ${JSON.stringify(receiverAccountName)} (read-keyset "kwalletv2") ${JSON.stringify(receiverChainId)} ${formatAmount(amount)})`,
                     networkId: networkId,
                     keyPairs: [{
                         publicKey: keypairs.publicKey,
                         secretKey: keypairs.secretKey,
                         clist: [
                             {
-                                name: `${tokenAddress}.DEBIT`,
-                                args: [senderAccountName]
+                                name: `${tokenAddress}.TRANSFER_XCHAIN`,
+                                args: [senderAccountName, receiverAccountName, Number(formatAmount(amount)), receiverChainId]
                             },
                             {
                                 name: `${tokenAddress}.GAS`,
@@ -113,7 +107,7 @@ export default function({
                     }],
                     meta: Pact.lang.mkMeta(senderAccountName, String(senderChainId), gasPrice, gasLimit, creationTime(), ttl),
                     envData: {
-                        "own-ks": guard || {
+                        "kwalletv2": guard || {
                             "pred": "keys-all",
                             "keys": [ getPubKey(receiverAccountName) ]
                         }
@@ -129,7 +123,7 @@ export default function({
     const transferSamechain = async (guard) => {
         const cmds = [
             {
-                pactCode: `(${tokenAddress}.transfer-create ${JSON.stringify(senderAccountName)} ${JSON.stringify(receiverAccountName)} (read-keyset "recp-ks") ${formatAmount(amount)})`,
+                pactCode: `(${tokenAddress}.transfer-create ${JSON.stringify(senderAccountName)} ${JSON.stringify(receiverAccountName)} (read-keyset "kwalletv2") ${formatAmount(amount)})`,
                 networkId: networkId,
                 keyPairs: [{
                     publicKey: keypairs.publicKey,
@@ -147,7 +141,7 @@ export default function({
                 }],
                 meta: Pact.lang.mkMeta(senderAccountName, String(senderChainId), gasPrice, gasLimit, creationTime(), ttl),
                 envData: {
-                    "recp-ks": guard || {
+                    "kwalletv2": guard || {
                         "pred": "keys-all",
                         "keys": [ getPubKey(receiverAccountName) ]
                     }
@@ -359,8 +353,8 @@ export default function({
 
 
     const genSignature = ({
-        code: pactCode, 
-        data: envData, 
+        pactCode, 
+        envData, 
         sender = senderAccountName, 
         chainId = senderChainId, 
         caps = [{name:"", args:""}], 
@@ -379,7 +373,8 @@ export default function({
                 clist: caps
             }],
             `"${new Date().toISOString()}"`,
-            pactCode, envData,
+            pactCode, 
+            envData,
             Pact.lang.mkMeta( 
                 sender, String(chainId), 
                 gasPrice, gasLimit,

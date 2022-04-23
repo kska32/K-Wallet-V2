@@ -96,7 +96,7 @@ const LoadingBoxStyle = styled.span`
         (p)=>{
             if(p.isLoading===true){
                 return `
-                    background-color: rgba(255,255,255, 0.33);
+                    background-color: rgba(255,255,255, 0.1);
                     pointer-events: initial;
 
                     &:after,
@@ -580,17 +580,19 @@ console.log("await window.kwalletv2.getAccountName();// request account name.");
 console.log("await window.kwalletv2.getSignature(signingCmd); //generate signature.");
 
 console.log(`const Example_SigningCmd = {
-    "code": "(coin.transfer-crosschain \"k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2\" \"k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2\" (read-keyset \"own-ks\") \"1\" 10.23000000)",
-    "data": {
-        "pred": "keys-all",
-        "keys": [
-            "b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2"
-        ]
+    "pactCode": "(coin.transfer-crosschain \"k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2\" \"k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2\" (read-keyset \"kw-keyset\") \"1\" 100.123)",
+    "envData": {
+        "kw-keyset": {
+            "pred": "keys-all",
+            "keys": [
+                "b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2"
+            ]
+        }
     },
-    caps: [
+    "caps": [
         {
-            name: "coin.TRANSFER",
-            args: [senderAccountName, receiverAccountName, Number(formatAmount(amount))]
+            name: "coin.TRANSFER_XCHAIN",
+            args: ["k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2", "k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2", +100.123, "1"]
         },
         {
             name: "coin.GAS",
@@ -604,5 +606,5 @@ console.log(`const Example_SigningCmd = {
     "chainId": "13",
     "gasPrice": 1e-8,
     "sender": "k:b8559cae02d291fbff2425511b040aaae606bd8e5edf6a2c16fe7529f6ab77f2"
-};
-`);
+};`
+);

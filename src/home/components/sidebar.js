@@ -31,7 +31,7 @@ const Wrapper = styled.div`
     flex-flow: column wrap;
     z-index: 380;
     color: #eee;
-    transition: all 0.5s;
+    transition: all 0.36s;
     opacity: 0;
     pointer-events: none;
     transform: translateX(-100%);
@@ -53,6 +53,10 @@ const Wrapper = styled.div`
         background-color: rgba(0,0,0,0.7);
         box-shadow: 0px 0px 8px 5px rgba(0,0,0,0.36);
         overflow-y: auto;
+        overflow-x: hidden;
+
+        display: flex;
+        flex-flow: column nowrap;
 
         &::-webkit-scrollbar {
             width: 0px;
@@ -63,7 +67,7 @@ const Wrapper = styled.div`
   
                 position: relative;
                 width: 100%;
-                padding: 50px 20px;
+                padding: 50px 30px;
                 display: flex;
                 flex-flow: column nowrap;
                 align-items: center;
@@ -72,7 +76,9 @@ const Wrapper = styled.div`
 
                 >.qrcode{
                     margin-bottom: 5px;
+                    border-radius: 10px;
                 }
+
                 >.accAddr{
                     max-width: 180px;
                     overflow-x: hidden;
@@ -82,7 +88,7 @@ const Wrapper = styled.div`
                     position: relative;
                     min-height: 30px;
                     padding-top: 5px;
-                    margin-bottom: 30px;
+                    margin-bottom: 50px;
                     >div{
                         position: absolute;
                         right: 0px;
@@ -137,7 +143,7 @@ const MenuBox = styled.div`
     overflow-y: auto;
 
     box-sizing: border-box;
-    transition: all 0.5s ease;
+    transition: all 0.3s;
 
     white-space: nowrap;
 

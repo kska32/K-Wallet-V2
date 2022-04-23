@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect, useCallback} from "react";
+import React, {useState, useLayoutEffect, useCallback, useEffect} from "react";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import styled from "styled-components";
 import C from "../../background/constant";
@@ -6,7 +6,7 @@ import C from "../../background/constant";
 import {
     vNetworkIdX, vLockupX, vAccAddrX, vAccountDetailsX, 
     vPageNumX, vSidebarOpenedX, vKdaPriceX, 
-    vTokenAddressX, vTokenAddressListX
+    vTokenAddressX, vTokenAddressListX, vIsDarkX
 } from "../atoms.js";
 
 import {VisibleStyleComp} from "./styled.comp.js";
@@ -15,10 +15,9 @@ import AccountDetails from "./account-details.js";
 import ProgressTracker from "./transfer-progress-tracker";
 import Sidebar from "./sidebar";
 
-import {NetDropdown, CopiesButton, ToggleButton} from "./special-buttons";
+import {NetDropdown, ToggleButton} from "./special-buttons";
 import MenuIcon from '@material-ui/icons/Menu';
 
-import kadenaLogo from "../images/k64.png";
 import LockIcon from '@material-ui/icons/Lock';
 import SyncIcon from '@material-ui/icons/Sync';
 
@@ -91,6 +90,7 @@ const Wrapper = styled.div`
 
         }
     }
+
 `;
 
 const Body = styled.div`
@@ -198,119 +198,6 @@ const Dashboard = styled.div`
 `;
 
 
-const AccountBalanceWrapper = styled(VisibleStyleComp)`
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-
-    >div{
-        &:nth-of-type(1){
-            box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.16);
-            background-color: #fff;
-            position: relative;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            padding: 5px;
-            margin-bottom: 30px;
-
-            >img{
-                /* COIN LOGO */
-                position: relative;
-                width: 100%;
-                height: 100%;
-                padding: 5px;
-                object-fit: contain;
-                user-drag: none;
-                user-select: none;
-            }
-        }
-        &:nth-of-type(2){
-            text-align: center;
-            margin-bottom: 38px;
-                
-            >div{
-                max-width: 200px;
-                word-break: break-all;
-                &:nth-of-type(1){
-                    /* KDA COUNT */
-                    margin-bottom: 16px;
-                    font-size: 24px;
-                    font-weight: bold;
-                }
-                &:nth-of-type(2){
-                    /* USD PRICE */
-
-                }
-            }
-        }
-
-        &:nth-of-type(3){
-                /* qrcode */
-
-        }
-
-        &:nth-of-type(4){
-                /* accountAddr */
-                position: relative;
-                
-                width: 236px;
-                user-select: none;
-                background-color: white;     
-                height: 50px;
-                border-radius: 25px;
-                padding: 0px 15px;
-
-                display: flex;
-                flex-flow: row nowrap;
-                align-items: center;
-                box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.1);
-                margin-bottom: 60px;
-    
-                >span{
-                    &:nth-of-type(1){
-                        display: flex;
-                        flex-flow: row nowrap;
-                        justify-content: space-between;
-                        align-items: center;
-                        flex: 1;
-
-                        >span{
-                            
-                                >div{
-                                    &:nth-of-type(1){
-                                        color: gray;
-                                        font-weight: normal;
-                                        font-size: 10px;
-                                        display: flex;
-                                        flex-flow: row nowrap;
-                                        align-items: center;
-                                        line-height: 1rem;
-                                    }
-                                    &:nth-of-type(2){
-                                        font-weight: bold;
-                                        color: black;
-                                        display: flex;
-                                        flex-flow: row nowrap;
-                                        align-items: center;
-                                        font-size: 15px;
-                                    }
-                                }
-                        }
-
-                    }
-
-                }
-            
-        }
-    }
-`;
-
-
 const CircleButton = styled.section`
     position: relative;
     cursor: pointer;
@@ -344,54 +231,6 @@ const CircleButton = styled.section`
         color: #fff; 
     }
 `;
-
-
-
-
-
-
-
-
-
-const AccountBalance = ({balance=0, price=0, children, accountAddr, visible}) => {
-    const [copied, setCopied] = useState(false);
-    const [tid, setTid] = useState(0);
- 
-    useLayoutEffect(()=>{
-        if(copied === true){
-            setTid((t)=>{
-                clearTimeout(t);
-                return setTimeout(()=>setCopied(false),2400);
-            });
-        }
-    },[copied])
-
-
-    return <AccountBalanceWrapper visible={visible}>
-        <div>
-            <img src={kadenaLogo}/>
-        </div>
-        <div>
-            <div>{Number(balance).toFixed(4)} KDA</div>
-            <div>${(Number(balance) * Number(price)).toFixed(4)} USD</div>
-            <div>${price} USD</div>
-        </div>
-        <div style={{display:'none'}}>
-            
-        </div>
-        <div>
-            <span>
-                <span>
-                    <div>Your Account:</div>
-                    <div>
-                        <span>{(accountAddr.slice(0,8)+' ... ' + accountAddr.slice(-8)).toLowerCase()}</span>
-                    </div>
-                </span>
-                <CopiesButton style={{marginRight:'-10px'}} text={accountAddr}/>
-            </span>
-        </div>
-    </AccountBalanceWrapper>
-}
 
 
 const LockProgressBarStyle = styled.div`
@@ -433,7 +272,7 @@ export function LockProgressBar({className, ...props}){
         }
     }, []);
 
-    return <LockProgressBarStyle interval={5} className={className}>
+    return <LockProgressBarStyle interval={5} className={className} id='lock-progress-bar' >
         <div className='bar' style={{width: pstate + '%'}}></div>
     </LockProgressBarStyle>
 }
@@ -449,6 +288,7 @@ export default function({visible}){
     const kdausdt = useRecoilValue(vKdaPriceX);
     const [tokenAddressList, setTokenAddressList] = useRecoilState(vTokenAddressListX);
     const [tokenAddress, setTokenAddress] = useRecoilState(vTokenAddressX);
+    const [isDark, setDark] = useRecoilState(vIsDarkX);
 
     useLayoutEffect(()=>{
         chrome.runtime.sendMessage({
@@ -472,6 +312,12 @@ export default function({visible}){
             accountId: accountAddr
         });       
     },[accountAddr, networkId]);
+
+
+    useLayoutEffect(()=>{
+        let t = document.querySelector('#root');
+        t.classList[isDark ? 'add' : 'remove']('dark');
+    }, [isDark]);
 
     return <Wrapper visible={visible} >
        <Body className='xBody'>
@@ -507,8 +353,8 @@ export default function({visible}){
                         }}
                     />
                 </span>
-                <span>{(accountDetails?.sum??0).toFixed(4)} - ${(kdausdt * (accountDetails?.sum??0)).toFixed(4)} - ${kdausdt}</span>
-                <ToggleButton />
+                <span className='prices'>{(accountDetails?.sum??0).toFixed(4)} - ${(kdausdt * (accountDetails?.sum??0)).toFixed(4)} - ${kdausdt}</span>
+                <ToggleButton key={isDark} value={isDark} onChange={(s)=>setDark(s)}/>
             </Navbar>
             <Dashboard className='xDashboard'>
                 <AccountDetails details={(accountDetails?.details??[])} accountAddr={accountAddr} visible={interActionNo === 9} />

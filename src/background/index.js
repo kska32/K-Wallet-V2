@@ -115,6 +115,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                         });
                         const str = JSON.parse(dec);
                         state.password = str[0];
+                        state.isDark = await getUserOptions({isDark: 'false'});
                         state.tokenAddress = await getUserOptions({tokenAddress: 'coin'});
                         const {networkId, keypairList, tokenAddress} = state;
                         state.keypairHex = keypairList[selectedAccIndex];
@@ -125,6 +126,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                         state.receiverAddrList = await createReceiverAddrList();
                         state.accountDetails = await getAccountDetails(accaddr, networkId, tokenAddress);
                         state.isLoading = {opened: false, text: null};
+
                         state.pageNum = 8;
                         sendResponse({ success: true, password: state.password });
                         
@@ -338,8 +340,9 @@ chrome.runtime.onInstalled.addListener(async()=>{
             }
         }
         case C.MSG_LOCK_UP: {
+            await StateManager.set({pageNum: 5});
             let state = await StateManager.get();
-            state = {...deepCopy(BackgroundState), pageNum: 5, networkId: state.networkId};
+            state = {...deepCopy(BackgroundState), networkId: state.networkId};
             return StateManager.set(state);
         }
         case C.MSG_GET_ACCOUNT_DETAILS: {
@@ -491,6 +494,12 @@ chrome.runtime.onInstalled.addListener(async()=>{
             await setUserOptions({[`tokenAddressList+${networkId}`]: rt?.fungibleV2??[]});
             return sendResponse(rt);
         }
+        case C.MSG_SET_DARK_MODE:{
+            const {isDark} = message;
+            let state = {};
+            state = await setUserOptions({isDark});
+            return StateManager.set(state);
+        }
         case C.MSG_REQ_USERDATA_FROM_WEBPAGE:{
             // sender: {
             //    documentId, frameId, id, origin, 
@@ -539,17 +548,6 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 //No messageId,  No hash
                 console.error("Invalid Commands.");
             }
-        
-
-            /*
-                Connect With Clover
-                cn.bing.com is requesting to your current account. 
-                Click Allow to grant access or Cancel to prevent access.
-            */
-
-            //let param = {}
-            //Transfer.reqSign(param)
-            
             break;
         }
         case C.MSG_CREATE_NEW_TAB: {
@@ -702,7 +700,7 @@ const createNewTab = (activeTab) => {
     const homepath = "home/index.html";
     findTabAndHighlightByUrl(`chrome-extension://${chrome.runtime.id}/${homepath}`, (isExist,thetabid)=>{
         if(!isExist){
-            createTabCompletely({url:homepath},(tab)=>{
+            createTabCompletely({url: homepath},(tab)=>{
                 //open or highlighted then ...
             });
         }

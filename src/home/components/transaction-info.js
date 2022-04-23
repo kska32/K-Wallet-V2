@@ -120,7 +120,7 @@ const Wrapper = styled.div`
 export default function({infoData, visible}){
     const setInfoData = useSetRecoilState(vInfoDataX);
 
-    return <Wrapper visible={visible}>
+    return <Wrapper visible={visible} className='tx-info'>
         <div>
             <div className='title'>Transaction</div>
             <div className='networkId'>
@@ -147,11 +147,11 @@ export default function({infoData, visible}){
             </div>
             <div className='amount'>
                 <div className='tag'>Amount: </div>
-                <div>{infoData?.details?.amount??''} KDA</div>
+                <div>{infoData?.details?.amount??''}</div>
             </div>
             <div className='maxfee'>
                 <div className='tag'>MaxTransactionFee:</div>
-                <div>{(infoData?.details?.gasPrice??0) * (infoData?.details?.gasLimit??0)} KDA</div>
+                <div>{(infoData?.details?.gasPrice??0) * (infoData?.details?.gasLimit??0)}</div>
             </div>
             <div className='cancel'>
                 <Button variant="contained" onClick={()=>{ 

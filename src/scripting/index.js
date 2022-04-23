@@ -1,5 +1,6 @@
 
 import C from "../background/constant";
+import {CheckTypeSigningCmd} from '../background/utils';
 
 if(!!chrome.runtime.id){
     //ISOLATED WORLD
@@ -42,12 +43,12 @@ if(!!chrome.runtime.id){
 }else{
     //MAIN  WORLD
     const randomUID = () => btoa(
-        [performance.now(),Date.now(),1]
-        .map(x=>Math.floor(x * Math.random() * 1e6)).join('')
+        [performance.now(), Date.now(), 1]
+        .map(x => Math.floor(x * Math.random() * 1e6)).join('')
     );
 
     const get = ({dataType = '', dataParam = null}) => {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve, reject) => {
             const messageId = randomUID();
             window.postMessage({
                 type: C.MSG_OPEN_POPUP_WINDOW, 
@@ -55,16 +56,14 @@ if(!!chrome.runtime.id){
                 dataType,
                 dataParam
             });
-            const resHandle = (event)=>{
+            const resHandle = (event) => {
                 if(event.data.type === C.MSG_OPEN_POPUP_WINDOW_RESPONSE){
                     if(event.data.messageId === messageId){
                         window.removeEventListener('message', resHandle);
-                        
                         const rt = {...event.data};
                         delete rt.type;
                         delete rt.frameId;
                         delete rt.messageId;
-
                         resolve(rt);
                     }
                 }
@@ -75,6 +74,12 @@ if(!!chrome.runtime.id){
 
     window.kwalletv2 = {
         getAccountName: () => get({dataType:'accountName'}),
-        getSignature: (signingCmd) => get({dataType:'signature', dataParam: signingCmd})
+        getSignature: (signingCmd) => {
+            const rt = CheckTypeSigningCmd(signingCmd);
+            return rt.ok ? 
+                get({dataType:'signature', dataParam: signingCmd}) : 
+                Promise.reject(rt.error);
+        }
     }
+
 }

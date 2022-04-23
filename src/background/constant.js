@@ -40,6 +40,10 @@ const C = {
     MSG_CHANGE_NETWORKID: 'CHANGE_NETWORKID',
     MSG_GET_IDLE_LIMIT: 'GET_IDLE_LIMIT',
     MSG_SET_IDLE_LIMIT: 'SET_IDLE_LIMIT',
+    
+    MSG_GET_DARK_MODE: 'GET_DARK_MODE',
+    MSG_SET_DARK_MODE: 'SET_DARK_MODE',
+
     MSG_REMOVE_A_TX_RESULT: 'REMOVE_A_TX_RESULT',
     MSG_GET_FUNGIBLE_V2_TOKEN_LIST: 'GET_FUNGIBLE_V2_LIST',
     MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR: 'CHANGE_FUNGIBLE_V2_TOKEN_ADDRESS',
@@ -86,6 +90,7 @@ export const BackgroundState = {
         idleLimit: 60 * 15,
         pageNum: 0,
 
+        isDark: false,
         password: '',
         passwordConfirm: '',
 

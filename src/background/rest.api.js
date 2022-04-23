@@ -206,23 +206,6 @@ export default function(){
         }
     }
 
-
-    function reqSign({
-        keypairs,
-        code, data, sender, 
-        chainId, 
-        caps, gasPrice, gasLimit, 
-        ttl, networkId
-    }){
-        //let keypairs = {
-        //    publicKey: '',
-        //    secretKey: ''
-        //};
-        const cct = createTransfer({keypairs});
-        const signature = cct.genSignature({...arguments[0]});
-        return signature;
-    }
-
     return {
         getAcctDetailsForAllChains,
         initAccountForAnyChains,
@@ -230,8 +213,7 @@ export default function(){
         crosschainTransfer,
         justTransfer,
         continueErrorTransfer,
-        searchFungibleV2token,
-        reqSign
+        searchFungibleV2token
     }
 }
 

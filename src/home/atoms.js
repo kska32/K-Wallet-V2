@@ -63,10 +63,16 @@ export const vStateX = selector({
     }
 });
 
-const AtomHelper = (keyName, Atom=vStateX)=>({
+const AtomHelper = (keyName, msgType=null, Atom=vStateX)=>({
     key: keyName,
     get: ({get}) => get(Atom)?.[keyName],
     set: ({get,set}, newValue) => {
+        if(!!msgType){
+            chrome.runtime.sendMessage({
+                type: msgType,
+                [keyName]: newValue
+            });
+        }
         set(Atom, {...get(Atom), [keyName]: newValue});
     }
 });
@@ -97,32 +103,28 @@ export const vRecentReqkeysDataX = selector({
     }
 });
 
-export const vNetworkIdX = selector({
-    key: "vNetworkIdX",
-    get: ({get}) => get(vStateX)?.networkId,
-    set: ({get,set}, newValue) => {
-        chrome.runtime.sendMessage({
-            type: C.MSG_CHANGE_NETWORKID, 
-            networkId: newValue
-        });
-        set(vState, {...get(vState), networkId: newValue});
-    }
-});
+
+const set = ($props,$msg,$atom) => selector(AtomHelper($props,$msg,$atom));
 
 
-export const vTokenAddressX = selector({
-    key: "vTokenAddressX",
-    get: ({get}) => get(vStateX)?.tokenAddress,
-    set: ({get,set}, newValue) => {
-        chrome.runtime.sendMessage({
-            type: C.MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR, 
-            tokenAddress: newValue
-        });
-        set(vState, {...get(vState), tokenAddress: newValue});
-    }
-});
 
-const set = (p) => selector(AtomHelper(p));
+export const vNetworkIdX = set(
+    'networkId', 
+    C.MSG_CHANGE_NETWORKID, 
+    vState
+);
+
+export const vTokenAddressX = set(
+    'tokenAddress', 
+    C.MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR, 
+    vState
+);
+
+export const vIsDarkX = set(
+    'isDark', 
+    C.MSG_SET_DARK_MODE, 
+    vStateX
+);
 
 export const vTokenAddressListX = set('tokenAddressList');
 

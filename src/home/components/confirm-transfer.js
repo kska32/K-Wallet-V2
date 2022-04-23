@@ -139,7 +139,7 @@ export default function({transferOpt, visible, cancelConfirm}){
     }, [transferOpt, reqkeysData]);
 
 
-    return <Wrapper visible={visible}>
+    return <Wrapper visible={visible} className='transfer-confirm'>
         <div>
             <div className='title'>Confirm Transaction</div>
             <div className='networkId'>
@@ -162,11 +162,11 @@ export default function({transferOpt, visible, cancelConfirm}){
             </div>
             <div className='amount'>
                 <div className='tag'>Amount: </div>
-                <div>{transferOpt?.amount??''} KDA</div>
+                <div>{transferOpt?.amount??''}</div>
             </div>
             <div className='maxfee'>
                 <div className='tag'>MaxTransactionFee:</div>
-                <div>{format((transferOpt?.gasPrice??0) * (transferOpt?.gasLimit??0))} KDA</div>
+                <div>{format((transferOpt?.gasPrice??0) * (transferOpt?.gasLimit??0))}</div>
             </div>
             <div className='confirm'>
                 <Button variant="contained" color="primary" onClick={TransferConfirm}>Confirm</Button>

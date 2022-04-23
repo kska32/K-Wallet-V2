@@ -8,6 +8,8 @@ import C from "../../background/constant";
 import {vAccountDetailsBX} from "../atoms";
 import {useRecoilState, useRecoilValue} from 'recoil';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
+import {produce} from "immer";
+import {isObject} from "../../background/utils";
 
 const AccountDetailsWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -177,7 +179,7 @@ const SearchBoxWrapper = styled.section`
         >input{
             border: none;
             outline: none;
-            background-color: rgba(255,255,255,0.8);
+            background-color: rgba(255,255,255,0.76);
             height: 100%;
             width: 100%;
             padding: 5px 10px;
@@ -196,7 +198,7 @@ const SearchBoxWrapper = styled.section`
        
         opacity: 0;
         pointer-events: none;
-        transition: all 0.3s 0s; 
+        transition: all 0.3s; 
         cursor: none;
 
         svg{
@@ -213,14 +215,35 @@ const SearchBoxWrapper = styled.section`
         width: 36px;
         height: 36px;
         background-color: rgba(0,0,0,0.12);
+        box-shadow: 0px 0px 3px 2px rgba(255,255,255,0.8) inset;
+        transform: rotateY(180deg);
+        transition: all 0.3s;
 
         svg{
             transition: all 0.3s;
         }
 
+        &.zero{
+            svg{
+                color: black;
+            }
+        }
+        &.one{  
+            svg{
+                color: yellow;
+            }
+        }
+        &.two{
+            transform: rotateY(0deg);
+            svg{
+                color: white;
+            }
+        }
+
         &:hover{
             background-color: rgba(0,0,0,0.16);
         }
+
     }
 
 
@@ -235,7 +258,7 @@ const SearchBoxWrapper = styled.section`
             .searchButton{
                 opacity: 1;
                 pointer-events: initial;
-                transition: all 0.3s 0.36s; 
+                transition: all 0.3s; 
                 cursor: pointer;
 
             }
@@ -244,27 +267,26 @@ const SearchBoxWrapper = styled.section`
 
 `;
 
-const DetailsBody = styled.section`
-    &.DetailsBody{
+const AccountDetailsWrapperB = styled.section`
+    &.AccountDetailsWrapperB{
         position: absolute;
-        background-color: rgba(255,255,255, 1);
+        background-color: #ccff90;
         z-index: 1;
         width: 100%;
         left: 0px;
-        height: calc(100% - 45px);     
+        height: 100%;     
 
-        transition: all 0.36s 0.36s;
-        bottom: calc(-100% - 45px);
+        transition: all 0.36s;
+        bottom: -100%;
         opacity: 0;
-        
 
         ${
             p=>p.show && `
-                bottom: calc(0% + 45px);
+                bottom: 0%;
                 opacity: 1;
+                transition: all 0.36s 0.3s;
             `
         }
-
 
         >div{
             position: absolute;
@@ -274,7 +296,6 @@ const DetailsBody = styled.section`
 
             >div{
                 display: table-row;
-                
                 &:nth-of-type(even){
                     background-color: rgba(0,0,0,0.036);
                 }
@@ -304,7 +325,6 @@ const DetailsBody = styled.section`
                 &:hover{
                     background-color: rgba(0,0,0,0.1);
                 }
-
 
                 >span{
                     position: relative;
@@ -349,11 +369,11 @@ const DetailsBody = styled.section`
     }
 `;
 
+
 export function SearchBox({accountAddr='', visible}){
-    const [clicked, setClicked] = useState(false);
-    const [value, setValue] = useState('');
-    const [accountDetailsB, setAccountDetailsB] = useRecoilState(vAccountDetailsBX);
-    const [hasResult, setResultVisible] = useState(false);
+    const [clicked, setClicked] = useState(0);
+    const accountDetailsB = useRecoilValue(vAccountDetailsBX);
+    const [value, setValue] = useState(accountDetailsB.accountAddr);
 
     const onEnterHandle = useCallback((accountName)=>{
         chrome.runtime.sendMessage({
@@ -362,12 +382,8 @@ export function SearchBox({accountAddr='', visible}){
         });       
     }, []);
 
-    useLayoutEffect(()=>{
-        setResultVisible(clicked);
-    }, [clicked]);
-
     return <>
-        <SearchBoxWrapper className='searchGroup' foldOut={clicked}>
+        <SearchBoxWrapper className='searchGroup' foldOut={clicked===1}>
             <div className='searchInput' >
                 <input type='text' 
                     placeholder="Search Account Name" 
@@ -379,16 +395,19 @@ export function SearchBox({accountAddr='', visible}){
             <IconButton className='searchButton' onClick={e=>onEnterHandle(value)}>
                 <SearchIcon />
             </IconButton>
-            <IconButton className='foldButton' onClick={()=>setClicked(s=>!s)} >
+            <IconButton 
+                className={'foldButton ' + ({0:'zero',1:'one',2:'two'}[clicked])} 
+                onClick={()=>setClicked(s => (s+1)%3)} 
+            >
                 <DoubleArrowIcon />
             </IconButton>
         </SearchBoxWrapper>
-        <DetailsBody className="DetailsBody" show={hasResult}>
+        <AccountDetailsWrapperB className="AccountDetailsWrapperB" show={clicked>0}>
             <AccountDetailsCore 
                 details={accountDetailsB.details} 
                 accountAddr={accountAddr} 
             />
-        </DetailsBody>
+        </AccountDetailsWrapperB>
     </>
 }
 
@@ -427,9 +446,13 @@ function AccountDetailsCore({details=[], accountAddr=''}){
             {
                 details.map((v,i)=>{
                     return <div key={i}>
-                        <span>{(v?.guard?.pred) && <CopiesButton style={{position:'absolute', left:'10px'}} nobg minisize text={detailsItemEx(i,v)}/> }{String(i).padStart(2,'0')}</span>
+                        <span>{(v?.guard) && <CopiesButton style={{position:'absolute', left:'10px'}} nobg minisize text={detailsItemEx(i,v)}/> }{String(i).padStart(2,'0')}</span>
                         <span>{amOwner(v) ? '✓' : sym}</span>
-                        <span title={JSON.stringify(v?.guard?.keys)}>{v?.guard?.keys?.length}{v?.guard?.keys?.length>0 ? ',' : ''}{v?.guard?.pred??sym}</span>
+                        <span title={!!v.guard ? JSON.stringify(v?.guard) : ''}>
+                            {v?.guard?.keys?.length}
+                            {v?.guard?.keys?.length>0 ? ',' : ''}
+                            {v?.guard === null ? sym : ((v?.guard?.pred) ? v.guard.pred : '###')}
+                        </span>
                         <span>{v?.success === 1 ? v.balance : 'TIMEOUT'}</span>
                     </div>
                 })
@@ -442,7 +465,7 @@ function AccountDetailsCore({details=[], accountAddr=''}){
 
 export default function AccountDetails({details=[], accountAddr='', visible}){
 
-    return <AccountDetailsWrapper visible={visible}>
+    return <AccountDetailsWrapper visible={visible} className='account-details'>
         <AccountDetailsCore details={details} accountAddr={accountAddr}/>
         <SearchBox accountAddr={accountAddr}/>
     </AccountDetailsWrapper>

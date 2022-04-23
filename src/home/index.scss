@@ -20,8 +20,13 @@ body{
     }
 
     .ui>*::-webkit-scrollbar {
-        width: 3px !important;
+        width: 6px !important;
     }
+
+    .ui>*::-webkit-scrollbar-track {
+        background-color: #fff;
+    }
+
 }
 
 #root{
@@ -50,4 +55,89 @@ body{
             background: #fff;
         }
     }
+
+
+
+
+    
+    &.dark{
+
+        --navbar-bgcolor: #000;
+        --dashboard-bgcolor: #222;
+
+
+        &::-webkit-scrollbar-track {
+            background-color: #333;
+        }
+
+    
+        &::-webkit-scrollbar-thumb {
+            border-radius: 0px;
+            background: var(--dashboad-bgcolor);
+            box-shadow: 0px 0px 0px 6px var(--dashboad-bgcolor) inset;
+    
+            &:hover{
+                background-color: var(--dashboad-bgcolor);
+            }
+        }
+    
+            
+        .xBody{
+
+            >.xNavbar{
+                background-color: var(--navbar-bgcolor);
+
+                >span{
+                    filter: invert(0.8964);
+
+                    .MenuButton{
+                        filter: invert(0.1);
+                    }
+
+                    &.prices{
+                        filter: invert(0.5);
+                    }
+                }
+                >div{
+                    /* dark mode buttun */
+                    filter: invert(0.18);
+                }
+            }
+
+            >.xSidebar{
+                >.sidebarWrapper{
+                    background-color: #222;
+                }
+            }
+
+            >.xDashboard{
+                background-color: var(--dashboard-bgcolor);
+
+                >div{
+                    filter: invert(0.8964);
+                }
+
+                    .AccountDetailsWrapperB{
+                        filter: invert(0);
+                    }
+
+                    .transfer-confirm{
+                        filter: invert(1);
+                    }
+
+                    .tx-tracker{
+                        .tx-info{
+                            filter: invert(1);
+                        }
+                    }
+
+            }
+
+            >#lock-progress-bar{
+                filter: invert(0.8964);
+            }
+        }
+    }
 }
+
+

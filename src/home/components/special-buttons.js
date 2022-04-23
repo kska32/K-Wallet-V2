@@ -145,6 +145,7 @@ const RippleButtonStyle = styled.button`
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: 0px 0px 3px 2px rgba(255,255,255,0.3);
 
     &:hover{
         background-color: #304d8a;
@@ -836,14 +837,14 @@ const ToggleButtonWrapper = styled.div`
     }
 `;
 
-export const ToggleButton = ({onChange=()=>{}}) => {
-    const [isDark, setDark] = useState(false);
+export const ToggleButton = ({value=false, onChange=()=>{}}) => {
+    const [isDark, setDark] = useState(value);
 
     const onClick = useCallback(()=>{
-       // setDark((s)=>{
-       //     onChange(!s); 
-       //     return !s;
-       // });
+        setDark((s)=>{
+            onChange(!s); 
+            return !s;
+        });
     },[isDark]);
 
     return <ToggleButtonWrapper onClick={onClick}>

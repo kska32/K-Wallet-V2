@@ -5,7 +5,7 @@ import {Buffer} from "buffer";
 import { reqkeysDB } from "./localdb";
 import C from "./constant";
 import {pushNoti} from "./notification";
-import Transfer from "./rest.api";
+import createTransfer from "./transfer";
 
 const toBin = hexstr => new Uint8Array(Buffer.from(hexstr,'hex'));
 const toHex = b => Buffer.from(b).toString('hex');
@@ -354,7 +354,7 @@ export const dataGeneratorForPopup = ({state, dataType, dataParam}) => {
         case 'signature':
             /*
                 const {
-                    code, data, sender, 
+                    pactCode, envData, sender, 
                     publicKey, chainId, 
                     caps, gasPrice, gasLimit, 
                     ttl, networkId 
@@ -372,9 +372,10 @@ export const dataGeneratorForPopup = ({state, dataType, dataParam}) => {
                 if(publicKey === state.keypairHex.publicKey){
                     keypairs = {publicKey, secretKey};
                 }
-                $data.signature = Transfer().reqSign({
-                    ...dataParam, keypairs
-                });
+
+                const cct = createTransfer({keypairs});
+                $data.signature = cct.genSignature({...dataParam});
+                
             }else{
                 $data.signature = null;
             }
@@ -384,3 +385,36 @@ export const dataGeneratorForPopup = ({state, dataType, dataParam}) => {
 
     return $data;
 }
+
+
+
+export const CheckTypeSigningCmd = (signingCmd, TypeList = {
+    pactCode: {type: 'string'},
+    envData: {type: 'object'},
+    caps: {type: 'array'},
+    networkId: {type: 'string'},
+    publicKey: {type: 'string'},
+    sender: {type: 'string'},
+    chainId: {type: 'string'},
+    ttl: {type: 'number'},
+    gasLimit: {type: 'number'},
+    gasPrice: {type: 'number'}
+}) => {
+    const rt = Object.keys(TypeList).reduce((a, k, i)=>{
+        if(signingCmd[k] === undefined){
+            a[k] = `[${k}] must be required!`;
+        }else if((signingCmd[k].constructor?.name.toLowerCase()) !== TypeList[k].type){
+            a[k] = `The value [${signingCmd[k]}] must be a ${TypeList[k].type}!`
+        }
+        return a;
+    }, {});
+
+    return {ok: Object.keys(rt).length === 0, error: rt};
+}
+
+
+export const isNumber = v => v?.constructor?.name === 'Number';
+export const isObject = v => v?.constructor?.name === 'Object';
+export const isArray = v => v?.constructor?.name === 'Array';
+export const isString = v => v?.constructor?.name === 'String';
+export const distinct = arr =>[...new Set(arr)];

@@ -332,7 +332,7 @@ export default function CoinSender({visible}){
     const minGasPrice = useMemo(()=>networkId.includes('testnet') ? C.MIN_GAS_PRICE : 1e-8, [networkId]);
     const minGasLimit = C.MIN_GAS_LIMIT;
     
-    return <CoinSenderWrapper visible={visible}>
+    return <CoinSenderWrapper visible={visible} className='coin-sender'>
             <Wrapper>
                 <div className='row-item text-overflow'>
                     <span>

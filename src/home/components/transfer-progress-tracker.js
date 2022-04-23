@@ -607,7 +607,7 @@ export default React.memo(({visible})=>{
     },[])
 
 
-    return <Transactions visible={visible}>
+    return <Transactions visible={visible} className='tx-tracker' >
             <div>
                 <Wrapper>
                 {
