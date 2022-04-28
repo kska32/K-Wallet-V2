@@ -50,6 +50,7 @@ export default function(){
             await crlogger.set([senderReqkeyResult]);
             await senderReqkeyAlarmDB.upsertItem(senderReqkey, {
                 count: 0, maxCount: MAX_COUNT, param, responds: [senderReqkeyResult]
+                //,txType: "TRANSACTION_TYPE"
             });
         }catch(err){
             if(crlogger !== null){
@@ -79,9 +80,7 @@ export default function(){
         let crlogger = null;
         let senderReqkey = null;
 
-        let param = {...arguments[0], xGasPrice, keypairs: {...arguments[0].keypairs}};
-        delete param.keypairs.secretKey;
-
+        let param = {...arguments[0], xGasPrice};
         let cct = createTransfer({...arguments[0], xGasPrice});
 
         try{

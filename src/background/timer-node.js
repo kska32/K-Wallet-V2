@@ -7,9 +7,7 @@ import {
 import createTransfer from "./transaction";
 import * as ccxt from "ccxt";
 import C,{BackgroundState} from "./constant";
-
 const deepCopy = o => JSON.parse(JSON.stringify(o));
-
 
 async function createTimerNode(infs){
     infs.forEach((inf,ix)=>{
@@ -32,22 +30,6 @@ export async function KdaPriceTick(){
             //console.error(err);
         }
     })
-}
-
-
-export async function BtcPriceTraker(){
-    /*
-    createTimer('BtcPriceTracker', 0, 5, async()=>{
-        try{
-            let binance = new ccxt.binance();
-            let binanceRes = await binance.fetchTicker('BTC/USDT');
-
-            console.log(binanceRes?.last??0, Date());
-        }catch(err){
-            //console.error(err);
-        }
-    })
-    */
 }
 
 export async function AutoLocker(){
@@ -223,7 +205,6 @@ export default async function InitTimerNode(){
                         await db.deleteByKey(senderReqkey);
                     }
                 });
-                
             }
         },
         {

@@ -8017,7 +8017,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
                 count: 0,
                 maxCount: MAX_COUNT,
                 param: param,
-                responds: [senderReqkeyResult]
+                responds: [senderReqkeyResult] //,txType: "TRANSACTION_TYPE"
+
               });
 
             case 34:
@@ -8087,65 +8088,63 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
               crlogger = null;
               senderReqkey = null;
               param = _objectSpread(_objectSpread({}, _args2[0]), {}, {
-                xGasPrice: xGasPrice,
-                keypairs: _objectSpread({}, _args2[0].keypairs)
+                xGasPrice: xGasPrice
               });
-              delete param.keypairs.secretKey;
               cct = (0,_transaction__WEBPACK_IMPORTED_MODULE_4__["default"])(_objectSpread(_objectSpread({}, _args2[0]), {}, {
                 xGasPrice: xGasPrice
               }));
-              _context2.prev = 6;
-              _context2.next = 9;
+              _context2.prev = 5;
+              _context2.next = 8;
               return cct.getAcctDetails(senderAccountName, senderChainId);
 
-            case 9:
+            case 8:
               senderDetails = _context2.sent;
-              _context2.next = 12;
+              _context2.next = 11;
               return (0,_utils__WEBPACK_IMPORTED_MODULE_7__.hasMeetGuard)(senderDetails.guard);
 
-            case 12:
+            case 11:
               hasMeet = _context2.sent;
 
               if (!(hasMeet !== true)) {
-                _context2.next = 15;
+                _context2.next = 14;
                 break;
               }
 
               throw _constant__WEBPACK_IMPORTED_MODULE_6__["default"].WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR;
 
-            case 15:
-              _context2.next = 17;
+            case 14:
+              _context2.next = 16;
               return cct.getAcctDetails(receiverAccountName, receiverChainId);
 
-            case 17:
+            case 16:
               receiverDetails = _context2.sent;
 
               if (!(!(0,_utils__WEBPACK_IMPORTED_MODULE_7__.isValidKAccount)(receiverAccountName) && (receiverDetails === null || receiverDetails === void 0 ? void 0 : receiverDetails.guard) === null)) {
-                _context2.next = 20;
+                _context2.next = 19;
                 break;
               }
 
               throw _constant__WEBPACK_IMPORTED_MODULE_6__["default"].WORDS_NOT_EXIST_RECEIVER_ACOUNT;
 
-            case 20:
-              _context2.next = 22;
+            case 19:
+              _context2.next = 21;
               return (0,_utils__WEBPACK_IMPORTED_MODULE_7__.getKeypairFromPubkey)(senderDetails.guard.keys);
 
-            case 22:
+            case 21:
               specifiedKeypairs = _context2.sent;
               cct.setKeypairs(specifiedKeypairs);
-              _context2.next = 26;
+              _context2.next = 25;
               return cct.transferCrosschain(receiverDetails.guard);
 
-            case 26:
+            case 25:
               senderReqkeyResult = _context2.sent;
               senderReqkey = senderReqkeyResult.requestKeys[0];
               crlogger = (0,_utils__WEBPACK_IMPORTED_MODULE_7__.createReqLogger)(senderReqkey, param);
-              _context2.next = 31;
+              _context2.next = 30;
               return crlogger.set([senderReqkeyResult]);
 
-            case 31:
-              _context2.next = 33;
+            case 30:
+              _context2.next = 32;
               return _localdb__WEBPACK_IMPORTED_MODULE_5__.senderReqkeyAlarmDB.upsertItem(senderReqkey, {
                 count: 0,
                 maxCount: MAX_COUNT,
@@ -8153,13 +8152,13 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
                 responds: [senderReqkeyResult]
               });
 
-            case 33:
-              _context2.next = 39;
+            case 32:
+              _context2.next = 38;
               break;
 
-            case 35:
-              _context2.prev = 35;
-              _context2.t0 = _context2["catch"](6);
+            case 34:
+              _context2.prev = 34;
+              _context2.t0 = _context2["catch"](5);
 
               if (crlogger !== null) {
                 crlogger.err(_context2.t0);
@@ -8169,12 +8168,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
               throw _context2.t0;
 
-            case 39:
+            case 38:
             case "end":
               return _context2.stop();
           }
         }
-      }, _callee2, null, [[6, 35]]);
+      }, _callee2, null, [[5, 34]]);
     }));
     return _crosschainTransfer.apply(this, arguments);
   }
