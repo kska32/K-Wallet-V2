@@ -154,12 +154,13 @@ const WrapperB = styled.div`
 `;
 
 const Description = styled.div`
-    margin-bottom: 63px;
+    margin-bottom: 52px;
     color: #999 !important;
-    text-align: right;
+    text-align: center;
     text-transform: capitalize;
     font-size: 13px;
     font-style: italic;
+    line-height: 1.068em;
 `;
 
 export default function({visible, style={}}){
@@ -187,8 +188,9 @@ export default function({visible, style={}}){
         <WrapperB >
             <KadenaLogoBox />
             <Description>
-                Powered by kadena blockchain,<br/>
-                Created by sparrow.
+                Powered by kadena blockchain<br/>
+                Manage tokens and txs<br/>
+                in an easiest and most secure way<br/>
             </Description>
             <ButtonGroup>
                 <div>

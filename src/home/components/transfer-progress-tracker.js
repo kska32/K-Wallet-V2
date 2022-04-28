@@ -41,7 +41,6 @@ const Transactions = styled(VisibleStyleComp)`
             color: #666;
             box-sizing: border-box;
             padding: 20px 20px;
-            border-top: thin solid rgba(0,0,0,0.2);
             overflow-x: hidden;
             overflow-y: auto;
             

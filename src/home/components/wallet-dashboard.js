@@ -6,20 +6,22 @@ import C from "../../background/constant";
 import {
     vNetworkIdX, vLockupX, vAccAddrX, vAccountDetailsX, 
     vPageNumX, vSidebarOpenedX, vKdaPriceX, 
-    vTokenAddressX, vTokenAddressListX, vIsDarkX
+    vTokenAddressX, vTokenAddressListX, vIsDarkX,
+    tLastOnePageOpened
 } from "../atoms.js";
 
-import {VisibleStyleComp} from "./styled.comp.js";
 import CoinSender from "./coin-sender.js";
 import AccountDetails from "./account-details.js";
 import ProgressTracker from "./transfer-progress-tracker";
 import Sidebar from "./sidebar";
+import AppInfo from "./app-info";
 
-import {NetDropdown, ToggleButton} from "./special-buttons";
+import {NetDropdown, ToggleButton, LastOneButton} from "./special-buttons";
 import MenuIcon from '@material-ui/icons/Menu';
 
 import LockIcon from '@material-ui/icons/Lock';
 import SyncIcon from '@material-ui/icons/Sync';
+
 
 const Wrapper = styled.div`
     position: absolute;
@@ -111,59 +113,76 @@ const Navbar = styled.div`
     padding: 15px 18px;
     height: 66px;
 
-    align-items: flex-start;
-    justify-content: flex-start;
+    align-items: center;
+    justify-content: space-between;
 
     >span{
-        display: flex;
-        flex-direction: row;
+        position: relative;
+        display: inline-flex;
+        flex-flow: row nowrap;
         justify-content: center;
         align-items: center;
-        margin-right: 20px;
-        user-select: none;
+        height: 100%;
 
-        &:nth-of-type(1){
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
-            flex-flow: row nowrap;
+        &.left{    
+            margin-right: 20px;
 
             >span{
                 position: relative;
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: #fff;
-                cursor: pointer;
-                box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.16);
-                transition: all 0.24s;
+                height: 100%;
+                display: inline-flex;
+                flex-flow: row nowrap;
                 
-                svg{
-                    font-size: 23px;
-                }
+                align-items: flex-start;
+                margin-right: 20px;
+                justify-content: center;
 
-                &:hover{
-                    transform: scale(1.08);
-                    box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.24);
+                &:nth-of-type(1){
+                    >span{
+                        position: relative;
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 50%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        background-color: #fff;
+                        cursor: pointer;
+                        box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.16);
+                        transition: all 0.24s;
+                        
+                        svg{
+                            font-size: 23px;
+                        }
+
+                        &:hover{
+                            transform: scale(1.08);
+                            box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.24);
+                        }
+                    }
+                }
+                &:nth-of-type(2){
+                    margin-top: 3px;
+                }
+                &:nth-of-type(3){
+                    margin-top: 3px;
+                }
+                &:nth-of-type(4){
+                    font-weight: 500;
+                    font-size: 16px;
+                    color: #fff;
+                    height: auto;
                 }
             }
         }
-        &:nth-of-type(2){
-            margin-top: 3px;
-        }
-        &:nth-of-type(3){
-            margin-top: 3px;
-        }
-        &:nth-of-type(4){
-            font-weight: 500;
-            font-size: 16px;
-            color: #fff;
-            height: 100%;
-        }
 
+        &.right{
+            margin-left: 20px;
+
+            >span{
+
+            }
+        }
     }
 `;
 
@@ -289,6 +308,7 @@ export default function({visible}){
     const [tokenAddressList, setTokenAddressList] = useRecoilState(vTokenAddressListX);
     const [tokenAddress, setTokenAddress] = useRecoilState(vTokenAddressX);
     const [isDark, setDark] = useRecoilState(vIsDarkX);
+    const [lastOnePageOpened, setLastOnePageOpened] = useRecoilState(tLastOnePageOpened);
 
     useLayoutEffect(()=>{
         chrome.runtime.sendMessage({
@@ -322,39 +342,44 @@ export default function({visible}){
     return <Wrapper visible={visible} >
        <Body className='xBody'>
             <Navbar className='xNavbar'>
-                <span>
-                    <span className='MenuButton' onClick={()=>setSidebarOpened(true)}>
-                        <MenuIcon />
+                <span className='left'>
+                    <span>
+                        <span className='MenuButton' onClick={()=>setSidebarOpened(true)}>
+                            <MenuIcon />
+                        </span>
                     </span>
+                    <span>
+                        <NetDropdown options={[
+                                {key: 0, text:'Mainnet', value:'mainnet01'},
+                                {key: 1, text:'Testnet', value:'testnet04'},
+                                //{key: 2, text:'localhost:8080', value:'localhost:8080'}
+                            ]} 
+                            key={networkId}
+                            defaultValue={networkId} 
+                            style={{minWidth:'136px'}}
+                            onChange={onNetworkChange} 
+                        />
+                    </span>
+                    <span>
+                        <NetDropdown options={tokenAddressList.map((c,i)=>({key: i, text:c, value:c}))}
+                            key={tokenAddress}
+                            defaultValue={tokenAddress}
+                            style={{minWidth:'136px'}}
+                            onChange={onTokenAddressChange}
+                            refreshOnClick={async()=>{
+                                const rt = await chrome.runtime.sendMessage({
+                                    type: C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST
+                                });   
+                                setTokenAddressList(rt.fungibleV2);
+                            }}
+                        />
+                    </span>
+                    <span className='prices'>{(accountDetails?.sum??0).toFixed(4)} - ${(kdausdt * (accountDetails?.sum??0)).toFixed(4)} - ${kdausdt}</span>
                 </span>
-                <span>
-                    <NetDropdown options={[
-                            {key: 0, text:'Mainnet', value:'mainnet01'},
-                            {key: 1, text:'Testnet', value:'testnet04'},
-                            //{key: 2, text:'localhost:8080', value:'localhost:8080'}
-                        ]} 
-                        key={networkId}
-                        defaultValue={networkId} 
-                        style={{minWidth:'136px'}}
-                        onChange={onNetworkChange} 
-                    />
+                <span className='right'>
+                    <ToggleButton key={isDark} value={isDark} onChange={(s)=>setDark(s)}/>
+                    <LastOneButton onClick={()=>setLastOnePageOpened(s=>!s)} />
                 </span>
-                <span>
-                    <NetDropdown options={tokenAddressList.map((c,i)=>({key: i, text:c, value:c}))}
-                        key={tokenAddress}
-                        defaultValue={tokenAddress}
-                        style={{minWidth:'136px'}}
-                        onChange={onTokenAddressChange}
-                        refreshOnClick={async()=>{
-                            const rt = await chrome.runtime.sendMessage({
-                                type: C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST
-                            });   
-                            setTokenAddressList(rt.fungibleV2);
-                        }}
-                    />
-                </span>
-                <span className='prices'>{(accountDetails?.sum??0).toFixed(4)} - ${(kdausdt * (accountDetails?.sum??0)).toFixed(4)} - ${kdausdt}</span>
-                <ToggleButton key={isDark} value={isDark} onChange={(s)=>setDark(s)}/>
             </Navbar>
             <Dashboard className='xDashboard'>
                 <AccountDetails details={(accountDetails?.details??[])} accountAddr={accountAddr} visible={interActionNo === 9} />
@@ -371,5 +396,7 @@ export default function({visible}){
         <CircleButton onClick={e=>lockUp(true)} className='lock-button'>
             <LockIcon fontSize='medium'/>
         </CircleButton>
+
+         <AppInfo className='app-info' visible={lastOnePageOpened} />
     </Wrapper>
 }

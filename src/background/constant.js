@@ -30,6 +30,7 @@ const C = {
 
     MSG_CHANGE_SELECTED_ACCOUNT: "CHANGE_DEFAULT_ACCOUNT",
     MSG_REMOVE_ACCOUNT: "REMOVE_ACCOUNT",
+    MSG_REMOVE_RECEIVER_ACCOUNT_NAME: 'REMOVE_RECEIVER_ACCOUNT_NAME',
     MSG_GET_PRIVATE_KEY: "GET_PRIVATE_KEY",
     MSG_VERIFY_PRIVATE_KEY: 'VERIFY_PRIVATE_KEY',
     MSG_IMPORT_PRIVATE_KEY: 'IMPORT_PRIVATE_KEY',
@@ -38,8 +39,8 @@ const C = {
     MSG_CHANGE_PASSWORD: 'CHANGE_PASSWORD',
     MSG_GET_NETWORKID: 'GET_DEFAULT_NETWORKID',
     MSG_CHANGE_NETWORKID: 'CHANGE_NETWORKID',
-    MSG_GET_IDLE_LIMIT: 'GET_IDLE_LIMIT',
-    MSG_SET_IDLE_LIMIT: 'SET_IDLE_LIMIT',
+    MSG_GET_AUTOLOCK_PERIOD: 'GET_AUTOLOCK_PERIOD',
+    MSG_SET_AUTOLOCK_PERIOD: 'SET_AUTOLOCK_PERIOD',
     
     MSG_GET_DARK_MODE: 'GET_DARK_MODE',
     MSG_SET_DARK_MODE: 'SET_DARK_MODE',
@@ -67,7 +68,13 @@ const C = {
     FMSG_LOCK_PROGRESS_STATE: "LOCK_PROGRESS_STATE",
     FMSG_INIT_ACCOUNT_SUCCESS: "INIT_ACCOUNT_SUCCESS",
     FMSG_SYNC_BACKGROUND_STATE: "SYNC_BACKGROUND_STATE",
+
+    WORDS_NOT_EXIST_RECEIVER_ACOUNT: "Transfers to non-existing receiver's accounts are not allowed, except for k:accounts.",
+    WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR: "The sender does not have enough keypairs to excute this transaction.",
+    WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS: "The sender account does not exist.",
+    WORDS_PUBKEY_NOT_MATCH_SENDER_GUARD: "The signing public key does not match the sender's guard.",
 };
+
 
 
 const defaultDetails = Array(20)
@@ -87,7 +94,7 @@ export const BackgroundState = {
         networkId: 'mainnet01', 
         tokenAddress: 'coin',
         tokenAddressList: ['coin'],
-        idleLimit: 60 * 15,
+        limitTime: 1000 * 60 * 15,
         pageNum: 0,
 
         isDark: false,

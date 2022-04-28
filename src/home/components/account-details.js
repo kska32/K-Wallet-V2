@@ -270,7 +270,7 @@ const SearchBoxWrapper = styled.section`
 const AccountDetailsWrapperB = styled.section`
     &.AccountDetailsWrapperB{
         position: absolute;
-        background-color: #ccff90;
+        background-color: #f7f0f5;
         z-index: 1;
         width: 100%;
         left: 0px;
@@ -451,7 +451,7 @@ function AccountDetailsCore({details=[], accountAddr=''}){
                         <span title={!!v.guard ? JSON.stringify(v?.guard) : ''}>
                             {v?.guard?.keys?.length}
                             {v?.guard?.keys?.length>0 ? ',' : ''}
-                            {v?.guard === null ? sym : ((v?.guard?.pred) ? v.guard.pred : '###')}
+                            {v?.guard === null ? sym : ((v?.guard?.pred) ? v.guard.pred : '+++++')}
                         </span>
                         <span>{v?.success === 1 ? v.balance : 'TIMEOUT'}</span>
                     </div>

@@ -26,7 +26,7 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import {passwordValidate, createMnemonic} from './component-utils.js';
 import { StatusButton, StatusTextField } from "./special-buttons";
 
-import createTransfer from "../../background/transfer";
+import createTransfer from "../../background/transaction";
 
 const blue = '#000';
 const gray = 'lightgray';

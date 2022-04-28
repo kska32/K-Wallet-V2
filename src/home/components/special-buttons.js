@@ -13,6 +13,12 @@ import WarningIcon from '@material-ui/icons/Warning';
 import SyncProblemIcon from '@material-ui/icons/SyncProblem';
 import RefreshIcon from '@material-ui/icons/Refresh';
 
+import { BrowserQRCodeReader } from '@zxing/browser';
+import qrScanSvg from "../images/qr-scan-icon.svg";
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
+import HelpOutlinedIcon from '@material-ui/icons/HelpOutlined';
 
 const $CopiesButton = styled.div`
     position: relative;
@@ -787,16 +793,14 @@ export const NetDropdown = ({defaultValue, options, onChange, refreshOnClick, ..
 
 
 const ToggleButtonWrapper = styled.div`
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    position: relative;
     background-color: #666;
     cursor: pointer;
     font-size: 16px;
     height: 23px;
     border-radius: 12px;
     box-shadow: 0px 0px 3px 2px rgba(255,255,255,0.3) inset;
+    filter: initial;
 
     .hint-group{
 
@@ -847,7 +851,7 @@ export const ToggleButton = ({value=false, onChange=()=>{}}) => {
         });
     },[isDark]);
 
-    return <ToggleButtonWrapper onClick={onClick}>
+    return <ToggleButtonWrapper className='toggleButton' onClick={onClick}>
         <div className='hint-group'>
             <span className='dark'>🌜</span>
             <span className='light'>🌞</span>
@@ -855,3 +859,277 @@ export const ToggleButton = ({value=false, onChange=()=>{}}) => {
         <div className={'circle' + (isDark ? ' dark' : '')} />
     </ToggleButtonWrapper>
 };
+
+
+
+
+const QrReaderBtStyle = styled.div`
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    z-index: 12;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    bottom: 12px;
+    right: 30px;
+    cursor: pointer;
+    background: transparent url(${qrScanSvg}) no-repeat center;
+    background-size: 86%;
+
+    transition: all 0.1s;
+    transform: scale(0.9);
+
+`;
+
+const VideoWrapper = styled.span`
+    position: absolute;
+    width: 252px;
+    height: 252px;
+
+    background-color: white;
+    left: 100%;
+    top: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 0px 30px 30px;
+    box-shadow: 2px 2px 7px 5px rgba(0,0,0,0.16);
+    border: 12px solid white;
+    box-sizing: border-box;
+    opacity: 0.8;
+
+    >video{
+        position: relative;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    >.cover{
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        background: transparent url(${qrScanSvg}) no-repeat center;
+        background-size: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        filter: opacity(0.3);
+    }
+
+    
+    .title{
+        font-size: 13px;
+        max-width: 200px;
+        text-align: center;
+        color: rgba(0,0,0,0.6);
+        text-transform: uppercase;
+        font-weight: bold;
+        bottom: 10px;
+        position: absolute;
+        font-style: italic;
+        user-select: none;
+    }
+
+    .circularProgress{
+        position: absolute;
+        color: red;
+        z-index: 1;
+        pointer-events: none;
+        user-select: none;
+        width: 50px !important;
+        height: 50px !important;
+
+        transition: all 0.3s;
+    }
+
+    max-width: 0px;
+    max-height: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+
+    ${
+        p=>p.isVisible && `
+            max-width: 252px;
+            max-height: 252px;
+            opacity: 1;
+            pointer-events: initial;
+        `
+    }
+
+`;
+
+
+export const QrReaderButton = ({onChange=()=>{}}) => {
+    const $video = React.useRef();
+    const $this = React.useRef();
+    const [codeReader]= useState(new BrowserQRCodeReader());
+    const [isVisible, setVisible] = useState(false);
+    const [controls, setControls] = useState(null);
+    const [receiverName, setReceiverName] = useState(null);
+    const [isLoading, setLoading] = useState(false);
+
+    useLayoutEffect(()=>{
+        const clickHandle = (e)=>{
+            if(e.path.includes($this.current) === false){
+                setVisible(false);
+            }
+        }
+        document.body.addEventListener('click', clickHandle);
+        return ()=>{
+            document.body.removeEventListener('click', clickHandle);
+        }
+    }, []);
+
+    const onClick = useCallback(()=>{
+        if(isVisible === false){
+            setLoading(true);
+            codeReader.decodeFromConstraints({ 
+                audio: false, video: { facingMode: "user" }
+            }, $video.current, (result, error, _controls)=>{
+                if(_controls){
+                    setControls(_controls);
+                    setLoading(false);
+                }
+                if(result !== undefined){
+                    setReceiverName(result.text);
+                    _controls.stop();
+                    setVisible(false);
+                }
+            });
+        }
+        setVisible(!isVisible);
+    }, [isVisible, controls, receiverName]);
+
+
+    useLayoutEffect(()=>{
+        if(receiverName !== null){
+            onChange(receiverName);
+            setReceiverName(null);
+        }
+    }, [receiverName]);
+
+
+    useLayoutEffect(()=>{
+        if(isVisible === false) controls?.stop?.();
+    }, [isVisible, controls]);
+
+    return <QrReaderBtStyle ref={$this} onClick={(e)=>onClick(e)} >
+        <VideoWrapper className='videoBoxWrapper' 
+            isVisible={isVisible} 
+            onClick={e=>e.stopPropagation()}
+        >
+            <video ref={$video} muted />
+            <div className='cover' />
+            <div className='title' >
+                {"Place your QR code in front of your PC's camera."}
+            </div>
+            <CircularProgress className='circularProgress' style={{opacity: +isLoading}} />
+        </VideoWrapper>
+    </ QrReaderBtStyle>
+}
+
+
+/************ AutoLockerSetter ************/
+
+const AutoLockerSetterStyle = styled.span`
+    position: absolute;
+    height: 23px;
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 11.5px;
+    width: 50px;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0px 0px 3px 2px rgba(255,255,255,0.5) inset;
+    transition: all 0.3s;
+
+    &:hover,
+    &:focus{
+        background-color: rgba(255,255,255,1);
+    }
+
+
+    >input{
+        position: absolute;
+        outline: none;
+        border: none;
+        background: none;
+        width: 100%;
+        height: 100%;
+        font-size: 12px;
+        padding: 3px 8px;
+        text-align: center;
+        color: #000;
+
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        &::placeholder{
+            font-size: 10px;
+        }
+
+        /* Firefox */
+        &[type=number] {
+            -moz-appearance: textfield;
+        }
+
+    }
+`;
+
+export const AutoLockerSetter = (props) => {
+
+
+    return <AutoLockerSetterStyle>
+        <input type='number' defaultValue={15} min="1" max="180" maxLength="3" />
+    </AutoLockerSetterStyle>
+}
+
+
+
+const LastOneButtonWrapper = styled.div`
+    position: relative;
+
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+    transition: all 0.24s;
+    margin-left: 15px;
+    transition: all 0.3s;
+
+    svg{
+        font-size: 36px;
+        color: rgba(255,255,255,0.8);
+        text-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+        transform: scale(1);
+    }
+
+    &:hover{
+        svg{
+            transform: scale(1.08);
+        }
+    }
+`;
+
+
+export const LastOneButton = ({onClick, ...props}) => {
+
+    return <LastOneButtonWrapper className='last-one-button' onClick={onClick}>
+        <HelpOutlineOutlinedIcon />
+    </LastOneButtonWrapper>
+}

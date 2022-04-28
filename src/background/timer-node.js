@@ -4,10 +4,12 @@ import {
     proofAlarmDB, continueTransferAlarmDB, 
     userOptionsDB, keypairsDB
 } from './localdb';
-import createTransfer from "./transfer";
+import createTransfer from "./transaction";
 import * as ccxt from "ccxt";
 import C,{BackgroundState} from "./constant";
+
 const deepCopy = o => JSON.parse(JSON.stringify(o));
+
 
 async function createTimerNode(infs){
     infs.forEach((inf,ix)=>{
@@ -21,11 +23,11 @@ async function createTimerNode(infs){
 }
 
 export async function KdaPriceTick(){
-    createTimer('kdapriceTick', 0, 5, async(name, alarmName)=>{
+    createTimer('kdapriceTick', 0, 10, async(name, alarmName)=>{
         try{
-            let kucoin = new ccxt.kucoin();
-            let kucoinRes = await kucoin.fetchTicker('KDA/USDT');
-            await StateManager.set({kdausdt: kucoinRes?.last??0});
+            let exchange = new ccxt.binance();
+            let exchangeResponse = await exchange.fetchTicker('KDA/USDT');
+            await StateManager.set({kdausdt: exchangeResponse?.last??0});
         }catch(err){
             //console.error(err);
         }
@@ -49,26 +51,33 @@ export async function BtcPriceTraker(){
 }
 
 export async function AutoLocker(){
-    const LIMITTIME = 1000 * 60 * 10; //idle time.
-
-    createTimer('AutoLocker', 0, 5, async(name, alarmName)=>{
+    const fieldName = 'autoLockupTime';
+    const defaultLimitTime = 1000 * 60 * 10; //default idle time.
+   
+    createTimer('AutoLocker', 0, 5, async () => {
         try{
-            const name = 'lockupTime';
-            
-            let lockupTime = await userOptionsDB.getItem(name);
-            if(lockupTime === undefined){
-                await userOptionsDB.upsertItem(name, {endTime: Date.now() + LIMITTIME, limitTime: LIMITTIME});
+            let rt = await userOptionsDB.getItem(fieldName);
+            if(rt === undefined){
+                await userOptionsDB.upsertItem(fieldName, {
+                    [fieldName]: {
+                        endTime: Date.now() + defaultLimitTime, 
+                        limitTime: defaultLimitTime
+                    }
+                });
             }else{
-                let {endTime, limitTime} = lockupTime;
+                let {autoLockupTime: {endTime, limitTime}} = rt;
                 let percent = Math.max( +((endTime - Date.now()) / limitTime * 100).toFixed(2), 0 );
 
                 if(percent===0){
-                    const state = await StateManager.get();
-                    if(state.pageNum >= 8){
+                    const {pageNum, networkId} = await StateManager.get([
+                        'pageNum',
+                        'networkId'
+                    ]);
+                    if(pageNum >= 8){
                         await StateManager.set({
                             ...deepCopy(BackgroundState), 
                             pageNum: 5, 
-                            networkId: state.networkId
+                            networkId
                         });
                     }
                 }else{
@@ -83,22 +92,23 @@ export async function AutoLocker(){
         }
     });
 
-    let tid = 0;
+    let lastedTime = 0;
     const detectActiveHandle = ()=>{
-        const d = 1000;
-        clearTimeout(tid);
-        tid = setTimeout(()=>{
-            userOptionsDB.getItem('lockupTime').then((res)=>{
-                const limitTime = res?.limitTime??0;
+        if(Date.now() - lastedTime >= 3000){
+            lastedTime = Date.now();
+            userOptionsDB.getItem(fieldName).then(({autoLockupTime})=>{
+                const limitTime = autoLockupTime?.limitTime??0;
                 if(limitTime){
-                    userOptionsDB.upsertItem('lockupTime', {
-                        endTime: Date.now() + limitTime
+                    userOptionsDB.upsertItem(fieldName, {
+                        [fieldName]: {
+                            limitTime,
+                            endTime: Date.now() + limitTime
+                        }
                     });
                 }
             });
-        }, d);
+        }
     }
-
     ['mousemove','click','mousedown'].map((eventname)=>
             window.addEventListener(eventname, detectActiveHandle));
 

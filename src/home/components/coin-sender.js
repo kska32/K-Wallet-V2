@@ -2,7 +2,7 @@ import React, {useState, useEffect, useLayoutEffect, useCallback, useMemo} from 
 import styled from "styled-components";
 import {produce,original} from "immer";
 
-import { Input, Dropdown, Button as ButtonSUI } from 'semantic-ui-react';
+import { Input, Dropdown } from 'semantic-ui-react';
 import Slider from '@material-ui/core/Slider';
 import Button from '@material-ui/core/Button';
 
@@ -15,6 +15,11 @@ import TransferConfirm from "./confirm-transfer";
 import {VisibleStyleComp} from "./styled.comp.js";
 import C from "../../background/constant";
 import {format} from "./component-utils";
+import { QrReaderButton } from "./special-buttons";
+
+import HighlightOffRoundedIcon from '@material-ui/icons/HighlightOffRounded';
+import {CopiesButton} from "./special-buttons";
+
 
 const CoinSenderWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -27,12 +32,39 @@ const CoinSenderWrapper = styled(VisibleStyleComp)`
     box-sizing: border-box;
     display: flex;
     flex-flow: column nowrap;
+    overflow: initial !important;
+    z-index: 301 !important;
 
     div.row-item{
         position: relative;
         display: flex;
         flex-flow: row nowrap;
         padding-bottom: 10px;
+
+        >span{
+            position: relative;
+            &.receiver-account{
+
+                >.ui.dropdown{
+                    input.search{
+                        padding-right: 53px !important;
+                    }
+                    .divider.text{
+                        max-width: 146px !important;
+                    }
+
+                    div[role=listbox]>div.item{
+                        padding-top: 8px !important;
+                        padding-bottom: 8px !important;
+                        padding-right: 8px !important;
+
+                        >span.text{
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
 
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -271,8 +303,7 @@ const Wrapper = styled.div`
     width: 100%;
     height: 600px;
     top: 0px;
-    overflow: auto;
-    overflow-x: hidden;
+
     padding: 15px 20px;
     display: flex;
     flex-flow: column nowrap;
@@ -284,15 +315,87 @@ const Wrapper = styled.div`
 `;
 
 
+const DropdownItem = styled.span`
+    position: relative;
+    display: inline-flex !important;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100% !important;
+
+    >span{
+        position: relative;
+        margin-right: 5px;
+        max-width: 168px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        align-items: center;
+        user-select: none;
+        transition: all 0.2s;
+        
+        &.text{
+            width: 100%;
+        }
+
+        &.remove{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            padding: 2px;
+            overflow: visible;
+            margin-right: 0px;
+            opacity: 0.5;
+
+            svg{
+                font-size: 16px;
+            }
+    
+            &:hover{
+                opacity: 0.8;
+            }
+            &:active{
+                color: red;
+            }
+
+            &.disabled{
+                pointer-events: none;
+                opacity: 0;
+            }
+        }
+
+        &.copy{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            overflow: visible;
+            margin-right: 0px;
+            opacity: 0.5;
+
+            >div{
+                margin-right: 0px;
+            }
+
+            &:hover{
+                opacity: 0.8;
+            }
+        }
+    }
+`;
+
+
 
 export default function CoinSender({visible}){
     const [transferOpt, setTransferOpt] = useRecoilState(vTransferOptX); 
     const [transferConfirmOpened, setTransferConfirmOpened] = useRecoilState(vTransferConfirmOpenedX);
-    const [senderAddrList, setSenderAddrList] = useRecoilState(vSenderAddrListX);
+    const senderAddrList = useRecoilValue(vSenderAddrListX);
     const [receiverAddrList, setReceiverAddrList] = useRecoilState(vReceiverAddrListX);
     const accountDetails = useRecoilValue(vAccountDetailsX);
     const networkId = useRecoilValue(vNetworkIdX);
     const tokenAddress = useRecoilValue(vTokenAddressX);
+    const [reAddrLstDropdownOpt, setReAddrLstDropdownOpt] = useState([]);
 
     const maxBalanceAmount = useMemo(()=>
         accountDetails?.details?.[transferOpt?.senderChainId??0]?.balance??0,
@@ -304,34 +407,65 @@ export default function CoinSender({visible}){
         [transferOpt.gasPrice, transferOpt.gasLimit]
     );
 
-    const isCrossTransfer = useMemo(()=>transferOpt.senderChainId !== transferOpt.receiverChainId,[
-        transferOpt.senderChainId, transferOpt.receiverChainId
-    ]);
-
     const chainIdList = useMemo(()=>Array(20).fill(0).map((v,i)=>({key:i, text:i, value:i})), []);
 
     const maxAmountToSend = useCallback(()=>{
             return format(Math.max(maxBalanceAmount - maxTransactionFee, C.MIN_AMOUNT));
     },[maxBalanceAmount, maxTransactionFee]);
 
-    const verifyReceiverAddr = useCallback((value)=>{
-        const vc = value.toLowerCase().trim();
-        if(vc.length !== 66) return false;
-        if(vc.includes("k:")===false) return false;
-        return [...vc.split(':')[1]].every((v,i)=>"0123456789abcdef".includes(v));
-    },[]);
+    const onAddItemHandle = useCallback((value)=>{
+        const vu = value.trim();
+        setTransferOpt(produce((s)=>{
+            s.receiverAccountName = vu;
+        }));
+        setReceiverAddrList(produce((s)=>{
+            if(!s.some((v,i)=>v.value===vu)){
+                s.push({text: vu, value: vu, key: s.length + 1});
+            }
+        }));
+        chrome.runtime.sendMessage({
+            type: C.MSG_UPSERT_A_RECEIVER_ADDR, 
+            receiverAccountName: vu
+        });
+    }, []);
 
     const transferAllow = useCallback((t)=>{
-        let isSenderAddrValid = verifyReceiverAddr(t.senderAccountName);
-        let isReceiverAddrValid = verifyReceiverAddr(t.receiverAccountName);
         let sameAccountSameChainid = t.senderAccountName === t.receiverAccountName && t.senderChainId === t.receiverChainId;
         if(t.amount <= 0) return false;
-        return !!(isSenderAddrValid & isReceiverAddrValid & !sameAccountSameChainid);
+        return !!(!sameAccountSameChainid);
     }, []);
 
     const minGasPrice = useMemo(()=>networkId.includes('testnet') ? C.MIN_GAS_PRICE : 1e-8, [networkId]);
     const minGasLimit = C.MIN_GAS_LIMIT;
-    
+
+    useLayoutEffect(()=>{
+        const receiverAddrListExt = receiverAddrList.map((c)=>{
+            const content = (<DropdownItem>
+                <span className='text' title={c.text}>{c.text}</span>
+                <span className={'remove' + ((!!+c.owner) ? ' disabled' : '')} 
+                    onClick={(e)=>{
+                        e.stopPropagation();
+                        chrome.runtime.sendMessage({
+                            type: C.MSG_REMOVE_RECEIVER_ACCOUNT_NAME,
+                            accountName: c.text
+                        });
+                    }}
+                >
+                    <HighlightOffRoundedIcon />
+                </span>
+                <span className='copy' onClick={(e)=>{
+                    e.stopPropagation();
+                }}>
+                    <CopiesButton nobg minisize text={c.text}/>
+                </span>
+            </DropdownItem>)
+            return {...c, content};
+        });
+
+        setReAddrLstDropdownOpt(receiverAddrListExt);
+    }, [receiverAddrList]);
+
+
     return <CoinSenderWrapper visible={visible} className='coin-sender'>
             <Wrapper>
                 <div className='row-item text-overflow'>
@@ -361,34 +495,21 @@ export default function CoinSender({visible}){
                     </span>
                 </div>
                 <div className='row-item text-overflow'>
-                    <span>
+                    <span className='receiver-account'>
                         <div>Receiver Account:</div>
+                        <QrReaderButton onChange={onAddItemHandle} />
                         <Dropdown placeholder='Receiver Account' search selection 
                             allowAdditions
-                            options={receiverAddrList} 
+                            options={reAddrLstDropdownOpt} 
+                            key={transferOpt.receiverAccountName}
                             value={transferOpt.receiverAccountName}
-                            title={transferOpt.receiverAccountName}
                             onAddItem={(e,{value})=>{
-                                const vu = value.trim();
-                                if(verifyReceiverAddr(vu)){
-                                    setTransferOpt(produce((s)=>{
-                                        s.receiverAccountName = vu;
-                                    }));
-                                    setReceiverAddrList(produce((s)=>{
-                                        if(!s.some((v,i)=>v.value===vu)){
-                                            s.push({text: vu, value: vu, key: s.length + 1});
-                                        }
-                                    }));
-                                    chrome.runtime.sendMessage({
-                                        type: C.MSG_UPSERT_A_RECEIVER_ADDR, 
-                                        receiverAccountName: vu
-                                    });
-                                }
+                                onAddItemHandle(value);
                             }}
                             onChange={(e,d)=>{
                                 setTransferOpt(produce((s)=>{
                                     s.receiverAccountName = d.value;
-                                }))
+                                }));
                             }}
                         />
                     </span>
@@ -443,47 +564,6 @@ export default function CoinSender({visible}){
                                 }));
                             }}
                         />
-                    </span>
-                </div>
-                <div className='row-item hidden'>
-                    <span>
-                        <div>Gas Payers:</div>
-                        <div className='row-item group column'>
-                            <div className='row-item'>
-                                <span>
-                                    <div>Gas Paying Account (Chain {transferOpt.senderChainId}):</div>
-                                    {/*
-                                        <Dropdown placeholder='Account Address' search selection 
-                                            options={receiverAddrList} 
-                                            value={transferOpt.gasPayingAccountA}
-                                            onChange={(e,d)=>{
-                                                setTransferOpt(produce((s)=>{
-                                                    s.gasPayingAccountA = d.value;
-                                                }))
-                                            }}
-                                        />
-                                    */}
-                                </span>
-                            </div>
-                            {
-                                isCrossTransfer && <div className='row-item'>
-                                    <span>
-                                        <div>Gas Paying Account (Chain {transferOpt.receiverChainId}):</div>
-                                        {/** 
-                                            <Dropdown placeholder='Account Address' search selection 
-                                                options={receiverAddrList} 
-                                                value={transferOpt.gasPayingAccountB}
-                                                onChange={(e,d)=>{
-                                                    setTransferOpt(produce((s)=>{
-                                                        s.gasPayingAccountB = d.value;
-                                                    }))
-                                                }}
-                                            />
-                                        */}
-                                    </span>
-                                </div>
-                            }
-                        </div>
                     </span>
                 </div>
                 <div className='row-item'>

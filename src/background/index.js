@@ -30,7 +30,6 @@ chrome.runtime.onInstalled.addListener(async()=>{
     await StateManager.set(state); 
 });
 
-
  async function MessageListener(message, sender = null, sendResponse = ()=>{}){
     let {type} = message;
     const setLoading = async (s = true) => {
@@ -263,6 +262,18 @@ chrome.runtime.onInstalled.addListener(async()=>{
             }
             return StateManager.set(state);
         }
+        case C.MSG_REMOVE_RECEIVER_ACCOUNT_NAME: {
+            const {accountName} = message;
+            const target = await accountAddrsDB.getItem(accountName);
+
+            if(target?.owner === false){
+                let state = {};
+                await accountAddrsDB.deleteByKey(accountName);
+                state.receiverAddrList = await createReceiverAddrList();
+                return StateManager.set(state);
+            }
+            break;
+        }
         case C.MSG_GET_PRIVATE_KEY: {
             const { password } = message;
             const sha512pwd = sha512(password||'');
@@ -398,13 +409,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const dec = aesDecrypt(state.keypairHex.secretKey, state?.password??'');
 
             if(dec !== "%%ERROR_DECRYPT_FAILED%%"){
-                let senderAccountPrivKey = JSON.parse(dec)[2];
                 let transferOption = {
                     ...message.transferOpt, 
-                    keypairs:{
-                        publicKey: state.keypairHex.publicKey,
-                        secretKey: senderAccountPrivKey, 
-                    },
                     networkId: state.networkId,
                     tokenAddress: state.tokenAddress
                 };
@@ -436,9 +442,9 @@ chrome.runtime.onInstalled.addListener(async()=>{
             return true;
         }
         case C.MSG_GET_NETWORKID: {
-            let state = await StateManager.get();
-            state = await getUserOptions({networkId: state.networkId});
-            return StateManager.set(state);
+            const {networkId} = await StateManager.get('networkId');
+            const networkIdValue = await getUserOptions({networkId});
+            return StateManager.set({networkId: networkIdValue});
         }
         case C.MSG_CHANGE_NETWORKID: {
             const {networkId} = message;
@@ -450,15 +456,22 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state.isLoading = {opened: false, text: null};
             return StateManager.set(state);
         }
-        case C.MSG_GET_IDLE_LIMIT: {
-            let state = await StateManager.get();
-            state = await getUserOptions({idleLimit: state.idleLimit}, sendResponse);
-            return StateManager(state);
+        case C.MSG_GET_AUTOLOCK_PERIOD: {
+            const {limitTime} = await StateManager.get('limitTime');//default limitTime
+            const rt = await getUserOptions({
+                autoLockupTime: { limitTime, endTime: Date.now() + limitTime }
+            });
+            return StateManager.set({limitTime: rt.limitTime});
         }
-        case C.MSG_SET_IDLE_LIMIT: {
-            const {idleLimit} = message;
-            let state = await setUserOptions({idleLimit}, sendResponse);
-            return StateManager.set(state);
+        case C.MSG_SET_AUTOLOCK_PERIOD: {
+            const {limitTime} = message;
+            const rt = await setUserOptions({
+                autoLockupTime: { 
+                    limitTime, 
+                    endTime: Date.now() + limitTime 
+                }
+            });
+            return StateManager.set({limitTime: rt.limitTime});
         }
         case C.FMSG_LOCK_PROGRESS_STATE:
         case C.FMSG_TRANSFER_PROGRESS:{
@@ -525,7 +538,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                             frameId: sender.frameId,
                             messageId,
                             success: true,
-                            data: dataGeneratorForPopup({
+                            data: await dataGeneratorForPopup({
                                 state, dataType, dataParam
                             })
                          }
@@ -601,7 +614,8 @@ async function createReceiverAddrList(){
     return aas?.map((v,i)=>({
         text: v.key, 
         value: v.key, 
-        key: i + 1 
+        key: i + 1,
+        owner: "01"[+v.owner]
     })) ?? [];
 }
 

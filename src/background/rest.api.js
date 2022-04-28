@@ -1,8 +1,7 @@
-import createTransfer from "./transfer";
+import createTransfer from "./transaction";
 import {reqkeysDB, senderReqkeyAlarmDB, alarmDbs} from "./localdb";
 import C from "./constant";
-import {createReqLogger, SendErrorMessage} from "./utils";
-
+import {createReqLogger, SendErrorMessage, isValidKAccount, hasMeetGuard, getKeypairFromPubkey} from "./utils";
 
 export default function(){
     const MAX_COUNT = 60;
@@ -22,8 +21,7 @@ export default function(){
         let crlogger = null;
         let senderReqkey = null;
 
-        let param = {...arguments[0], keypairs: {...arguments[0].keypairs}};
-        delete param.keypairs.secretKey;
+        let param = {...arguments[0]};
 
         gasLimit = Math.min(Math.max(C.MIN_GAS_LIMIT, +gasLimit), C.MAX_GAS_LIMIT);
         gasPrice = Math.min(Math.max(C.MIN_GAS_PRICE, +gasPrice), C.MAX_GAS_PRICE);
@@ -31,8 +29,21 @@ export default function(){
         let cct = createTransfer({...arguments[0], gasLimit, gasPrice});
 
         try{
-            let details = await cct.getAcctDetails(receiverAccountName, receiverChainId);
-            let senderReqkeyResult = await cct.transferSamechain(details.guard);
+            let senderDetails = await cct.getAcctDetails(senderAccountName, senderChainId);
+            let hasMeet = await hasMeetGuard(senderDetails.guard);
+            if(hasMeet !== true){
+                throw C.WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR;
+            }
+
+            let receiverDetails = await cct.getAcctDetails(receiverAccountName, receiverChainId);
+            if(!isValidKAccount(receiverAccountName) && receiverDetails?.guard === null){
+                throw C.WORDS_NOT_EXIST_RECEIVER_ACOUNT;
+            }
+
+            const specifiedKeypairs = await getKeypairFromPubkey(senderDetails.guard.keys);
+            cct.setKeypairs(specifiedKeypairs);
+
+            let senderReqkeyResult = await cct.transferSamechain(receiverDetails.guard);
                    
             senderReqkey = senderReqkeyResult.requestKeys[0];
             crlogger = createReqLogger(senderReqkey, param); 
@@ -74,8 +85,21 @@ export default function(){
         let cct = createTransfer({...arguments[0], xGasPrice});
 
         try{
-            let details = await cct.getAcctDetails(receiverAccountName, receiverChainId);
-            let senderReqkeyResult = await cct.transferCrosschain(details.guard);
+            let senderDetails = await cct.getAcctDetails(senderAccountName, senderChainId);
+            let hasMeet = await hasMeetGuard(senderDetails.guard);
+            if(hasMeet !== true){
+                throw C.WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR;
+            }
+
+            let receiverDetails = await cct.getAcctDetails(receiverAccountName, receiverChainId);
+            if(!isValidKAccount(receiverAccountName) && receiverDetails?.guard === null){
+                throw C.WORDS_NOT_EXIST_RECEIVER_ACOUNT;
+            }
+
+            const specifiedKeypairs = await getKeypairFromPubkey(senderDetails.guard.keys);
+            cct.setKeypairs(specifiedKeypairs);
+
+            let senderReqkeyResult = await cct.transferCrosschain(receiverDetails.guard);
                     
             senderReqkey = senderReqkeyResult.requestKeys[0];
             crlogger = createReqLogger(senderReqkey, param);
@@ -201,7 +225,7 @@ export default function(){
             ee.fungibleV2 = x;
             return ee;
         }catch(err){
-            console.log("--->error:>", err);
+            //console.log("--->error:>", err);
             return null;
         }
     }

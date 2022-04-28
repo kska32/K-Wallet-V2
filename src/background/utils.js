@@ -2,14 +2,21 @@
 import CryptoJS from "crypto-js";
 import nacl from "tweetnacl";
 import {Buffer} from "buffer";
-import { reqkeysDB } from "./localdb";
+import { reqkeysDB, keypairsDB } from "./localdb";
 import C from "./constant";
 import {pushNoti} from "./notification";
-import createTransfer from "./transfer";
+import createTransfer from "./transaction";
+
 
 const toBin = hexstr => new Uint8Array(Buffer.from(hexstr,'hex'));
 const toHex = b => Buffer.from(b).toString('hex');
 export const sha512 = (message) => CryptoJS.SHA512(message).toString(CryptoJS.enc.Base64);
+
+export const isNumber = v => v?.constructor?.name === 'Number';
+export const isObject = v => v?.constructor?.name === 'Object';
+export const isArray = v => v?.constructor?.name === 'Array';
+export const isString = v => v?.constructor?.name === 'String';
+export const distinct = arr =>[...new Set(arr)];
 
 export const aesEncrypt = (plaintext, key) => {
     let ciphertext = CryptoJS.AES
@@ -85,7 +92,8 @@ export const StateManager = (()=>{
 
 
 
-export const getCurrentPrivateKey = async () => {
+export const getCurrentKeypair = async () => {
+    //必须先登录
     const state = await StateManager.get();
     const encPassword = state.password;
     const encSecretKey = state.keypairHex.secretKey;
@@ -94,6 +102,71 @@ export const getCurrentPrivateKey = async () => {
         publicKey: state.keypairHex.publicKey,
         secretKey: JSON.parse(dec)[2]
     }) : null;
+}
+
+
+export const getKeypairFromPubkey = async (pubkey) => {
+    //먼저 로그인이 필요함.
+    const {password} = await StateManager.get('password');
+    if(password === undefined) return null;
+
+    const encPassword = password;
+    const keypairs = await keypairsDB.getAll();
+
+    let pubkeys = isArray(pubkey) ? pubkey : [pubkey];
+    let result = [];
+     
+    for(const $pubkey of pubkeys){
+        const targetIndex = keypairs.findIndex(k => k.key === $pubkey);
+        if(targetIndex === -1) continue;
+    
+        const targetKeypair = keypairs[targetIndex];
+        const encSecretKey = targetKeypair.enc;
+        const dec = aesDecrypt(encSecretKey, encPassword);
+
+        if(dec !== "%%ERROR_DECRYPT_FAILED%%"){
+            result.push({
+                publicKey: $pubkey,
+                secretKey: JSON.parse(dec)[2]
+            })
+        }
+    }
+    return result;
+}
+
+
+export const hasMeetGuard = async (guard) => {
+    //Example: has keypairs to meet sender's guard...?
+    if(guard === null) throw C.WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS;
+    
+    const keypairs = await keypairsDB.getAll();
+    const pubkeys = keypairs.map(k=>k.key);
+
+    const preds = {
+        "keys-all": ($guard) => $guard?.keys?.every(k=>pubkeys.includes(k))??false,
+        "keys-any": ($guard) => $guard?.keys?.some(k=>pubkeys.includes(k))??false,
+        "keys-2": ($guard, count = 2) => {
+            let s = 0;
+            for(let i=0; i < ($guard?.keys?.length??0); i++){
+                const t = $guard.keys[i];
+                if(pubkeys.includes(t)){
+                    if(++s >= count) return true;
+                }
+            }
+            return false;
+        }
+    }
+    return preds?.[guard?.pred]?.(guard)??false
+}
+
+
+export const hasRelativeKeypairs = async (publicKeys) => {
+    const keypairs = await keypairsDB.getAll();
+    const pubkeys = keypairs.map(k=>k.key);
+    const a = [...new Set(publicKeys)];
+    const b = [...new Set(pubkeys)];
+    const c = [...new Set([...a, ...b])];
+    return a.length > 0 && b.length > 0 && c.length === b.length;
 }
 
 
@@ -344,44 +417,50 @@ export const openPopupWindow = ({
 
 
 //
-export const dataGeneratorForPopup = ({state, dataType, dataParam}) => {
-    const $data = {};
+export const dataGeneratorForPopup = async ({state, dataType, dataParam}) => {
+    const $data = {signature: null};
 
-    switch(dataType){
-        case 'accountName':
-            $data.accountName = `k:${state.keypairHex.publicKey}`;
-            break;
-        case 'signature':
-            /*
-                const {
-                    pactCode, envData, sender, 
-                    publicKey, chainId, 
-                    caps, gasPrice, gasLimit, 
-                    ttl, networkId 
-                } = dataParam;
-            */
-            const sha512pwd = state.password;
-            const encryptedKeypair = state.keypairHex.secretKey;
-            const dec = aesDecrypt(encryptedKeypair, sha512pwd);
-            let keypairs = null;
-
-            if(dec !== "%%ERROR_DECRYPT_FAILED%%"){
-                const str = JSON.parse(dec);
-                const publicKey = str[1];
-                const secretKey = str[2];
-                if(publicKey === state.keypairHex.publicKey){
-                    keypairs = {publicKey, secretKey};
-                }
-
-                const cct = createTransfer({keypairs});
-                $data.signature = cct.genSignature({...dataParam});
-                
-            }else{
-                $data.signature = null;
+    try{
+        switch(dataType){
+            case 'accountName': {
+                $data.accountName = `k:${state.keypairHex.publicKey}`;
+                break;
             }
-            break;
-    }
+            case 'signature': {
+                /*
+                    const {
+                        pactCode, envData, sender, 
+                        publicKey, chainId, 
+                        caps, gasPrice, gasLimit, 
+                        ttl, networkId 
+                    } = dataParam;
+                */
+                const sha512pwd = state.password;
+                const encryptedKeypair = state.keypairHex.secretKey;
+                const dec = aesDecrypt(encryptedKeypair, sha512pwd);
 
+                if(dec !== "%%ERROR_DECRYPT_FAILED%%"){
+                    const cct = createTransfer({networkId: dataParam?.networkId});
+
+                    const pubk = dataParam.publicKey;
+                    if(!isString(pubk) && !isArray(pubk)) throw "Invalid signing publicKey.";
+
+                    const $publicKeys = isArray(pubk) ? pubk : [pubk];
+                    const hasMeet = await hasRelativeKeypairs($publicKeys);
+                    if(hasMeet !== true) throw C.WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR;
+                    
+                    const specifiedKeypairs = await getKeypairFromPubkey($publicKeys);
+                    cct.setKeypairs(specifiedKeypairs);
+                    $data.signature = cct.genSignature({...dataParam});
+                }else{
+                    $data.signature = null;
+                }
+                break;
+            }
+        }
+    }catch(err){
+        $data.error = err?.message??err;
+    }
 
     return $data;
 }
@@ -393,7 +472,7 @@ export const CheckTypeSigningCmd = (signingCmd, TypeList = {
     envData: {type: 'object'},
     caps: {type: 'array'},
     networkId: {type: 'string'},
-    publicKey: {type: 'string'},
+    publicKey: {type: ['string','array']},
     sender: {type: 'string'},
     chainId: {type: 'string'},
     ttl: {type: 'number'},
@@ -401,10 +480,12 @@ export const CheckTypeSigningCmd = (signingCmd, TypeList = {
     gasPrice: {type: 'number'}
 }) => {
     const rt = Object.keys(TypeList).reduce((a, k, i)=>{
+        const cmdValueType = signingCmd[k].constructor?.name.toLowerCase();
+        const types = TypeList[k].type;
         if(signingCmd[k] === undefined){
             a[k] = `[${k}] must be required!`;
-        }else if((signingCmd[k].constructor?.name.toLowerCase()) !== TypeList[k].type){
-            a[k] = `The value [${signingCmd[k]}] must be a ${TypeList[k].type}!`
+        }else if(cmdValueType !== types && !(isArray(types) && types?.includes(cmdValueType))){
+                a[k] = `The value ${JSON.stringify(signingCmd[k])} must be a ${JSON.stringify(types)}!`;
         }
         return a;
     }, {});
@@ -413,8 +494,9 @@ export const CheckTypeSigningCmd = (signingCmd, TypeList = {
 }
 
 
-export const isNumber = v => v?.constructor?.name === 'Number';
-export const isObject = v => v?.constructor?.name === 'Object';
-export const isArray = v => v?.constructor?.name === 'Array';
-export const isString = v => v?.constructor?.name === 'String';
-export const distinct = arr =>[...new Set(arr)];
+export const isValidKAccount = (value)=>{
+    const vc = value;
+    if(vc.length !== 66) return false;
+    if(vc.includes("k:")===false) return false;
+    return [...vc.split(':')[1]].every((v,i)=>"0123456789abcdef".includes(v));
+};

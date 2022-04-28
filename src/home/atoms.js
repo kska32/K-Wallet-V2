@@ -48,6 +48,11 @@ export const MsgidTabidHashState = atom({
 export const tBackButton = atom({
     key: 'back-button',
     default: {disabled: false}
+});
+
+export const tLastOnePageOpened = atom({
+    key: 'last-one-page',
+    default: false
 })
 
 
@@ -105,8 +110,6 @@ export const vRecentReqkeysDataX = selector({
 
 
 const set = ($props,$msg,$atom) => selector(AtomHelper($props,$msg,$atom));
-
-
 
 export const vNetworkIdX = set(
     'networkId', 

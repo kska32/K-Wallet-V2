@@ -10,11 +10,11 @@
     "storage",
     "unlimitedStorage",
     "notifications",
-    "tabs",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "http://*/*", "https://*/*"
   ],
   "background": {
     "service_worker": "background/index.js"

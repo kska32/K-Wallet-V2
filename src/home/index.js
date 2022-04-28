@@ -24,7 +24,7 @@ import ImportWalletStepper from "./components/import-wallet-stepper.js";
 import circlesSvg from "./images/circles.svg";
 import ErrorOutlineOutlinedIcon from '@material-ui/icons/ErrorOutlineOutlined';
 import CloseOutlinedIcon from '@material-ui/icons/CloseOutlined';
-import transfer from "../background/transfer";
+import transfer from "../background/transaction";
 
 import InitTimerNode,{KdaPriceTick, AutoLocker} from "../background/timer-node";
 const LOADING_BOX_TIMEOUT = 7 * 1000;
@@ -211,7 +211,8 @@ const ModalStyle = styled.div`
                     justify-content: center;
                     align-items: flex-start;
                     scroll-padding: 15px;
-                    word-break: break-all;
+                    word-break: keep-all;
+                    text-align: center;
 
                     &.confirmType{
                         padding: 15px 70px;

@@ -20,7 +20,7 @@ body{
     }
 
     .ui>*::-webkit-scrollbar {
-        width: 6px !important;
+        width: 0px !important;
     }
 
     .ui>*::-webkit-scrollbar-track {
@@ -64,7 +64,7 @@ body{
 
         --navbar-bgcolor: #000;
         --dashboard-bgcolor: #222;
-
+        
 
         &::-webkit-scrollbar-track {
             background-color: #333;
@@ -81,9 +81,12 @@ body{
             }
         }
     
+        .lock-button,
+        .refresh-button{
+            filter: invert(0.8964);
+        }
             
         .xBody{
-
             >.xNavbar{
                 background-color: var(--navbar-bgcolor);
 
@@ -92,42 +95,64 @@ body{
 
                     .MenuButton{
                         filter: invert(0.1);
+                        border: 2px solid #999;
                     }
 
-                    &.prices{
+                    .prices{
+                        filter: invert(0.5);
+                    }
+
+                    .toggleButton{
+                        /* dark mode buttun */
+                        filter: invert(0.8964);
+                    }
+
+                    .last-one-button{
                         filter: invert(0.5);
                     }
                 }
-                >div{
-                    /* dark mode buttun */
-                    filter: invert(0.18);
-                }
+
             }
 
             >.xSidebar{
                 >.sidebarWrapper{
-                    background-color: #222;
+                    filter: invert(0.8964);
                 }
             }
 
             >.xDashboard{
-                background-color: var(--dashboard-bgcolor);
+                    background-color: var(--dashboard-bgcolor);
+                    filter: initial;
+                    transition: filter 0s !important;
 
-                >div{
-                    filter: invert(0.8964);
-                }
-
-                    .AccountDetailsWrapperB{
-                        filter: invert(0);
+                    .account-details,
+                    .coin-sender,
+                    .tx-tracker{
+                        filter: invert(0.8964);
                     }
 
-                    .transfer-confirm{
-                        filter: invert(1);
+                    .coin-sender{
+                        video{
+                            filter: invert(1);
+                        }
+
+                        .transfer-confirm{
+                            filter: invert(1);
+                            button{
+                                filter: invert(1);
+                            }
+                        }
                     }
 
                     .tx-tracker{
-                        .tx-info{
-                            filter: invert(1);
+                        filter: initial;
+                        box-shadow: 2px 2px 3px 2px rgba(255,255,255,0.2);
+                        
+                        >div{
+                            filter: invert(0.8964);
+                            .tx-info{
+                                filter: invert(1);
+                            }
                         }
                     }
 
