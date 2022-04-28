@@ -82,7 +82,7 @@ const Wrapper = styled.div`
             }
             
             &.confirm{
-                
+                margin-top: 30px;
             }
 
             &.cancel{

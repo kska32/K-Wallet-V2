@@ -430,9 +430,10 @@ export default function CoinSender({visible}){
     }, []);
 
     const transferAllow = useCallback((t)=>{
+        let isReceiverAddrValid = t.receiverAccountName.trim().length > 0;
         let sameAccountSameChainid = t.senderAccountName === t.receiverAccountName && t.senderChainId === t.receiverChainId;
         if(t.amount <= 0) return false;
-        return !!(!sameAccountSameChainid);
+        return !!(isReceiverAddrValid & !sameAccountSameChainid);
     }, []);
 
     const minGasPrice = useMemo(()=>networkId.includes('testnet') ? C.MIN_GAS_PRICE : 1e-8, [networkId]);
