@@ -23,24 +23,11 @@ const Wrapper = styled.section`
     flex-flow: column nowrap;
     justify-content: center;
     align-items: center;
-
-    transform: scale(0.8);
     opacity: 0;
     pointer-events: none;
 
-    background-color: rgba(0,0,0,0.6);
-    box-shadow: 0px 0px 0px 10000px rgba(0,0,0,0.8);
+    background-color: rgba(0,0,0,0.8);
     transition: all 0.24s;
-
-
-    
-    ${
-        p=>p.visible===true && `
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: initial;
-        `
-    }
 
     >div{
         position: relative;
@@ -53,6 +40,8 @@ const Wrapper = styled.section`
         display: flex;
         flex-flow: column nowrap;
         justify-content: space-around;
+        transform: scale(0.8);
+        transition: all 0.24s;
 
         &:after{
             content: 'CHANGE-PASSWORD';
@@ -189,6 +178,16 @@ const Wrapper = styled.section`
                 }
             }
         }
+    }
+
+    ${
+        p => p.visible===true && `
+            opacity: 1;
+            pointer-events: initial;
+            >div{
+                transform: scale(1);
+            }
+        `
     }
 `;
 

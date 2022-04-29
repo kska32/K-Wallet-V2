@@ -180,3 +180,8 @@ export const vImportPrikeyPageX = set('importPriKeyPage');
 export const vChangePasswordPageX = set('changePasswordPage');
 
 export const vKdaPriceX = set('kdausdt');
+
+export const vGetPublickeyListX2 = selector({
+    key: 'getPublicKeyList',
+    get: ({get}) => get(vKeypairListX).map(v=>v.publicKey)
+});

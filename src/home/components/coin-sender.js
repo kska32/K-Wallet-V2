@@ -387,7 +387,7 @@ const DropdownItem = styled.span`
 
 
 
-export default function CoinSender({visible}){
+export default React.memo(function CoinSender({visible}){
     const [transferOpt, setTransferOpt] = useRecoilState(vTransferOptX); 
     const [transferConfirmOpened, setTransferConfirmOpened] = useRecoilState(vTransferConfirmOpenedX);
     const senderAddrList = useRecoilValue(vSenderAddrListX);
@@ -703,5 +703,5 @@ export default function CoinSender({visible}){
                 cancelConfirm={()=>setTransferConfirmOpened(false)}
             />
     </CoinSenderWrapper>
-}
+});
 

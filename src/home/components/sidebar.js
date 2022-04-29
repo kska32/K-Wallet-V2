@@ -242,7 +242,7 @@ const MenuboxItem = ({children, onSelect, onRemove, className}) => {
     </MenuboxItemStyle>
 }
 
-export default function({className, ...props}){
+export default React.memo(({className, ...props}) => {
     const accountAddr = useRecoilValue(vAccAddrX);
     const [sidebarOpened, setSidebarOpened] = useRecoilState(vSidebarOpenedX);
     const keypairList = useRecoilValue(vKeypairListX);
@@ -337,4 +337,4 @@ export default function({className, ...props}){
         <ImportPrivateKey />
         <ChangePassword />
     </Wrapper>
-}
+});

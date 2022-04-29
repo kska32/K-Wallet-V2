@@ -261,7 +261,7 @@ const itemFilter = (d) => {
     return d;
 }
 
-function StepProgressBar({item}){
+const StepProgressBar = React.memo(({item}) => {
     const isInit = React.useRef(false);
     const [data, setData] = useState(itemFilter(item));
     const [step, setStep] = useState(vstep(data));
@@ -357,7 +357,7 @@ function StepProgressBar({item}){
                     })
                 }
     </StepProgressBarStyle>
-}
+});
 
 
 const Wrapper = styled.div`

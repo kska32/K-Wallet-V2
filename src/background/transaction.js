@@ -97,10 +97,16 @@ export default function({
                     networkId: networkId,
 
                     keyPairs: mkClistKeypairs(keypairs, [
-                            {
-                                name: `${tokenAddress}.TRANSFER_XCHAIN`,
-                                args: [senderAccountName, receiverAccountName, Number(formatAmount(amount)), receiverChainId]
-                            },
+                            (tokenAddress === 'coin' ? 
+                                {
+                                    name: `${tokenAddress}.TRANSFER_XCHAIN`,
+                                    args: [senderAccountName, receiverAccountName, Number(formatAmount(amount)), receiverChainId]
+                                } : 
+                                {
+                                    name: `${tokenAddress}.DEBIT`, 
+                                    args: [senderAccountName]
+                                }
+                            ),
                             {
                                 name: `${tokenAddress}.GAS`,
                                 args: []

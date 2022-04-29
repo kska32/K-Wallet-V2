@@ -8077,9 +8077,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
               cmds = [{
                 pactCode: "(".concat(tokenAddress, ".transfer-crosschain ").concat(JSON.stringify(senderAccountName), " ").concat(JSON.stringify(receiverAccountName), " (read-keyset \"").concat(KeysetName, "\") ").concat(JSON.stringify(receiverChainId), " ").concat(formatAmount(amount), ")"),
                 networkId: networkId,
-                keyPairs: mkClistKeypairs(keypairs, [{
+                keyPairs: mkClistKeypairs(keypairs, [tokenAddress === 'coin' ? {
                   name: "".concat(tokenAddress, ".TRANSFER_XCHAIN"),
                   args: [senderAccountName, receiverAccountName, Number(formatAmount(amount)), receiverChainId]
+                } : {
+                  name: "".concat(tokenAddress, ".DEBIT"),
+                  args: [senderAccountName]
                 }, {
                   name: "".concat(tokenAddress, ".GAS"),
                   args: []
@@ -8934,6 +8937,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "isValidKey": () => (/* binding */ isValidKey),
 /* harmony export */   "normalizeUTF8": () => (/* binding */ normalizeUTF8),
 /* harmony export */   "openPopupWindow": () => (/* binding */ openPopupWindow),
+/* harmony export */   "pubkeysMeetGuard": () => (/* binding */ pubkeysMeetGuard),
 /* harmony export */   "runtimeSendMessage": () => (/* binding */ runtimeSendMessage),
 /* harmony export */   "sendMessageErrHandle": () => (/* binding */ sendMessageErrHandle),
 /* harmony export */   "sendMsgToTabs": () => (/* binding */ sendMsgToTabs),
@@ -9215,11 +9219,46 @@ var getKeypairFromPubkey = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
+var pubkeysMeetGuard = function pubkeysMeetGuard(pubkeys, guard) {
+  var _preds$guard$pred, _preds$guard$pred2;
+
+  var preds = {
+    "keys-all": function keysAll($guard) {
+      var _$guard$keys$every, _$guard$keys;
+
+      return (_$guard$keys$every = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys = $guard.keys) === null || _$guard$keys === void 0 ? void 0 : _$guard$keys.every(function (k) {
+        return pubkeys.includes(k);
+      })) !== null && _$guard$keys$every !== void 0 ? _$guard$keys$every : false;
+    },
+    "keys-any": function keysAny($guard) {
+      var _$guard$keys$some, _$guard$keys2;
+
+      return (_$guard$keys$some = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys2 = $guard.keys) === null || _$guard$keys2 === void 0 ? void 0 : _$guard$keys2.some(function (k) {
+        return pubkeys.includes(k);
+      })) !== null && _$guard$keys$some !== void 0 ? _$guard$keys$some : false;
+    },
+    "keys-2": function keys2($guard) {
+      var count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
+      var s = 0;
+
+      for (var i = 0; i < ((_$guard$keys$length = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys3 = $guard.keys) === null || _$guard$keys3 === void 0 ? void 0 : _$guard$keys3.length) !== null && _$guard$keys$length !== void 0 ? _$guard$keys$length : 0); i++) {
+        var _$guard$keys$length, _$guard$keys3;
+
+        var t = $guard.keys[i];
+
+        if (pubkeys.includes(t)) {
+          if (++s >= count) return true;
+        }
+      }
+
+      return false;
+    }
+  };
+  return (_preds$guard$pred = preds === null || preds === void 0 ? void 0 : (_preds$guard$pred2 = preds[guard === null || guard === void 0 ? void 0 : guard.pred]) === null || _preds$guard$pred2 === void 0 ? void 0 : _preds$guard$pred2.call(preds, guard)) !== null && _preds$guard$pred !== void 0 ? _preds$guard$pred : false;
+};
 var hasMeetGuard = /*#__PURE__*/function () {
   var _ref3 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_3___default().mark(function _callee3(guard) {
-    var _preds$guard$pred, _preds$guard$pred2;
-
-    var keypairs, pubkeys, preds;
+    var keypairs, pubkeys;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_3___default().wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
@@ -9240,41 +9279,9 @@ var hasMeetGuard = /*#__PURE__*/function () {
             pubkeys = keypairs.map(function (k) {
               return k.key;
             });
-            preds = {
-              "keys-all": function keysAll($guard) {
-                var _$guard$keys$every, _$guard$keys;
+            return _context3.abrupt("return", pubkeysMeetGuard(pubkeys, guard));
 
-                return (_$guard$keys$every = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys = $guard.keys) === null || _$guard$keys === void 0 ? void 0 : _$guard$keys.every(function (k) {
-                  return pubkeys.includes(k);
-                })) !== null && _$guard$keys$every !== void 0 ? _$guard$keys$every : false;
-              },
-              "keys-any": function keysAny($guard) {
-                var _$guard$keys$some, _$guard$keys2;
-
-                return (_$guard$keys$some = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys2 = $guard.keys) === null || _$guard$keys2 === void 0 ? void 0 : _$guard$keys2.some(function (k) {
-                  return pubkeys.includes(k);
-                })) !== null && _$guard$keys$some !== void 0 ? _$guard$keys$some : false;
-              },
-              "keys-2": function keys2($guard) {
-                var count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
-                var s = 0;
-
-                for (var i = 0; i < ((_$guard$keys$length = $guard === null || $guard === void 0 ? void 0 : (_$guard$keys3 = $guard.keys) === null || _$guard$keys3 === void 0 ? void 0 : _$guard$keys3.length) !== null && _$guard$keys$length !== void 0 ? _$guard$keys$length : 0); i++) {
-                  var _$guard$keys$length, _$guard$keys3;
-
-                  var t = $guard.keys[i];
-
-                  if (pubkeys.includes(t)) {
-                    if (++s >= count) return true;
-                  }
-                }
-
-                return false;
-              }
-            };
-            return _context3.abrupt("return", (_preds$guard$pred = preds === null || preds === void 0 ? void 0 : (_preds$guard$pred2 = preds[guard === null || guard === void 0 ? void 0 : guard.pred]) === null || _preds$guard$pred2 === void 0 ? void 0 : _preds$guard$pred2.call(preds, guard)) !== null && _preds$guard$pred !== void 0 ? _preds$guard$pred : false);
-
-          case 8:
+          case 7:
           case "end":
             return _context3.stop();
         }

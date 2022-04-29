@@ -132,7 +132,7 @@ body{
                     }
 
                     .account-details{
-                        filter: invert(0.8632);
+                        filter: invert(0.8732);
                     }
 
                     .coin-sender{
@@ -161,6 +161,7 @@ body{
                         >div{
                             filter: invert(0.8864);
                             .tx-info{
+                                background-color: rgba(0,0,0,0.9);
                                 filter: invert(1);
                             }
                         }

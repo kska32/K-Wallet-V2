@@ -1,15 +1,14 @@
-import React, {useState, useCallback, useLayoutEffect} from "react";
+import React, {useState, useCallback} from "react";
 import styled from "styled-components";
 import {VisibleStyleComp} from "./styled.comp.js";
 import {CopiesButton} from "./special-buttons";
 import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import C from "../../background/constant";
-import {vAccountDetailsBX} from "../atoms";
-import {useRecoilState, useRecoilValue} from 'recoil';
+import {vAccountDetailsBX, vGetPublickeyListX2} from "../atoms";
+import {useRecoilValue} from 'recoil';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
-import {produce} from "immer";
-import {isObject} from "../../background/utils";
+import {pubkeysMeetGuard} from "../../background/utils";
 
 const AccountDetailsWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -23,7 +22,6 @@ const AccountDetailsWrapper = styled(VisibleStyleComp)`
     &::-webkit-scrollbar {
         width: 0px;
     }
-
 
     >div{
         position: relative;
@@ -370,7 +368,7 @@ const AccountDetailsWrapperB = styled.section`
 `;
 
 
-export function SearchBox({accountAddr='', visible}){
+export const SearchBox = React.memo(({accountAddr='', visible}) => {
     const [clicked, setClicked] = useState(0);
     const accountDetailsB = useRecoilValue(vAccountDetailsBX);
     const [value, setValue] = useState(accountDetailsB.accountAddr);
@@ -409,15 +407,17 @@ export function SearchBox({accountAddr='', visible}){
             />
         </AccountDetailsWrapperB>
     </>
-}
+});
 
 
-function AccountDetailsCore({details=[], accountAddr=''}){
+
+const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
     const [sym] = useState('-');
+    const publicKeyList = useRecoilValue(vGetPublickeyListX2);
 
     const amOwner = useCallback((v)=>{
-        return (v?.guard?.keys??[]).includes(accountAddr.split(":")[1]) 
-    },[accountAddr]);
+        return pubkeysMeetGuard(publicKeyList, v?.guard??null);
+    },[publicKeyList]);
 
     const detailsItemEx = useCallback((ix,data)=>{
         let result = {
@@ -432,7 +432,6 @@ function AccountDetailsCore({details=[], accountAddr=''}){
         result.chain = ix;
         result.keyset = data.guard;
         result.account = data.account;
-
         return JSON.stringify(result);
     }, []);
 
@@ -461,12 +460,12 @@ function AccountDetailsCore({details=[], accountAddr=''}){
                 details.length === 0 && <NoData>No Data</NoData>
             }
      </div>
-}
+});
 
-export default function AccountDetails({details=[], accountAddr='', visible}){
+export default React.memo(function AccountDetails({details=[], accountAddr='', visible}){
 
     return <AccountDetailsWrapper visible={visible} className='account-details'>
         <AccountDetailsCore details={details} accountAddr={accountAddr}/>
         <SearchBox accountAddr={accountAddr}/>
     </AccountDetailsWrapper>
-}
+});

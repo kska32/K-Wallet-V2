@@ -135,13 +135,7 @@ export const getKeypairFromPubkey = async (pubkey) => {
 }
 
 
-export const hasMeetGuard = async (guard) => {
-    //Example: has keypairs to meet sender's guard...?
-    if(guard === null) throw C.WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS;
-    
-    const keypairs = await keypairsDB.getAll();
-    const pubkeys = keypairs.map(k=>k.key);
-
+export const pubkeysMeetGuard = (pubkeys, guard) => {
     const preds = {
         "keys-all": ($guard) => $guard?.keys?.every(k=>pubkeys.includes(k))??false,
         "keys-any": ($guard) => $guard?.keys?.some(k=>pubkeys.includes(k))??false,
@@ -157,6 +151,16 @@ export const hasMeetGuard = async (guard) => {
         }
     }
     return preds?.[guard?.pred]?.(guard)??false
+}
+
+
+export const hasMeetGuard = async (guard) => {
+    //Example: has keypairs to meet sender's guard...?
+    if(guard === null) throw C.WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS;
+    
+    const keypairs = await keypairsDB.getAll();
+    const pubkeys = keypairs.map(k=>k.key);
+    return pubkeysMeetGuard(pubkeys, guard);
 }
 
 

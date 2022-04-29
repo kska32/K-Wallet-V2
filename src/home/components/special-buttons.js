@@ -99,7 +99,7 @@ const $CopiesButton = styled.div`
     }
 `;
 
-export const CopiesButton = ({text='hello,world', color, nobg, minisize, ...props})=>{
+export const CopiesButton = React.memo(({text='hello,world', color, nobg, minisize, ...props})=>{
     //copy to clipboard 
     const [copied, setCopied] = useState(false);
     const [tid, setTid] = useState(0);
@@ -122,7 +122,7 @@ export const CopiesButton = ({text='hello,world', color, nobg, minisize, ...prop
                 <DoneOutlineOutlinedIcon />
             </IconButton>
     </$CopiesButton>
-}
+});
 
 
 
@@ -191,7 +191,7 @@ const RippleButtonStyle = styled.button`
 
 `;
 
-export const RippleButton = ({children, onClick, ...props})=>{
+export const RippleButton = React.memo(({children, onClick, ...props})=>{
     const [ripples,setRipple] = useState([]);
     const [x, setX] = useState(null);
     const [y, setY] = useState(null);
@@ -217,7 +217,7 @@ export const RippleButton = ({children, onClick, ...props})=>{
         </div>
         {ripples}
     </RippleButtonStyle>
-}
+});
 
 
 //* ***********StatusButton************* */
@@ -718,7 +718,7 @@ const NetDropdownWrapper = styled.div`
         }
 `;
 
-export const NetDropdown = ({defaultValue, options, onChange, refreshOnClick, ...props}) => {
+export const NetDropdown = React.memo(({defaultValue, options, onChange, refreshOnClick, ...props}) => {
     const [state, setState] = useState(Math.max(options.findIndex(v=>v.value===defaultValue),0));
     const [opened, setOpened] = useState(false);
     const thisRef = useRef(null);
@@ -789,7 +789,7 @@ export const NetDropdown = ({defaultValue, options, onChange, refreshOnClick, ..
             }
         </div>
     </NetDropdownWrapper>
-}
+});
 
 
 const ToggleButtonWrapper = styled.div`

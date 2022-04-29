@@ -274,7 +274,7 @@ const LockProgressBarStyle = styled.div`
     }
 `;
 
-export function LockProgressBar({className, ...props}){
+export const LockProgressBar = React.memo(({className, ...props}) => {
     const [pstate, setPstate] = useState(100);
 
     useLayoutEffect(()=>{
@@ -294,7 +294,7 @@ export function LockProgressBar({className, ...props}){
     return <LockProgressBarStyle interval={5} className={className} id='lock-progress-bar' >
         <div className='bar' style={{width: pstate + '%'}}></div>
     </LockProgressBarStyle>
-}
+});
 
 
 export default function({visible}){
