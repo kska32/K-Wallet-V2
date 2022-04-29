@@ -21,7 +21,7 @@ export default function(){
         let crlogger = null;
         let senderReqkey = null;
 
-        let param = {...arguments[0]};
+        let param = {...arguments[0], txType: C.TX_SAME_TRANSFER};
 
         gasLimit = Math.min(Math.max(C.MIN_GAS_LIMIT, +gasLimit), C.MAX_GAS_LIMIT);
         gasPrice = Math.min(Math.max(C.MIN_GAS_PRICE, +gasPrice), C.MAX_GAS_PRICE);
@@ -80,7 +80,7 @@ export default function(){
         let crlogger = null;
         let senderReqkey = null;
 
-        let param = {...arguments[0], xGasPrice};
+        let param = {...arguments[0], xGasPrice, txType: C.TX_CROSS_TRANSFER};
         let cct = createTransfer({...arguments[0], xGasPrice});
 
         try{

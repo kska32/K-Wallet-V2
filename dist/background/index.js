@@ -7575,7 +7575,11 @@ var C = {
   WORDS_NOT_EXIST_RECEIVER_ACOUNT: "Transfers to non-existing receiver's accounts are not allowed, except for k:accounts.",
   WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR: "The sender does not have enough keypairs to excute this transaction.",
   WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS: "The sender account does not exist.",
-  WORDS_PUBKEY_NOT_MATCH_SENDER_GUARD: "The signing public key does not match the sender's guard."
+  WORDS_PUBKEY_NOT_MATCH_SENDER_GUARD: "The signing public key does not match the sender's guard.",
+  TX_SAME_TRANSFER: "s-transfer",
+  TX_CROSS_TRANSFER: "x-transfer",
+  TX_ROTATE: "rotate",
+  TX_CREATE_ACCOUNT: "create-account"
 };
 var defaultDetails = Array(20).fill(0).map(function (v, i) {
   return {
@@ -7954,7 +7958,9 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
               senderAccountName = _ref.senderAccountName, keypairs = _ref.keypairs, receiverAccountName = _ref.receiverAccountName, amount = _ref.amount, senderChainId = _ref.senderChainId, receiverChainId = _ref.receiverChainId, gasPrice = _ref.gasPrice, gasLimit = _ref.gasLimit, networkId = _ref.networkId, tokenAddress = _ref.tokenAddress;
               crlogger = null;
               senderReqkey = null;
-              param = _objectSpread({}, _args[0]);
+              param = _objectSpread(_objectSpread({}, _args[0]), {}, {
+                txType: _constant__WEBPACK_IMPORTED_MODULE_6__["default"].TX_SAME_TRANSFER
+              });
               gasLimit = Math.min(Math.max(_constant__WEBPACK_IMPORTED_MODULE_6__["default"].MIN_GAS_LIMIT, +gasLimit), _constant__WEBPACK_IMPORTED_MODULE_6__["default"].MAX_GAS_LIMIT);
               gasPrice = Math.min(Math.max(_constant__WEBPACK_IMPORTED_MODULE_6__["default"].MIN_GAS_PRICE, +gasPrice), _constant__WEBPACK_IMPORTED_MODULE_6__["default"].MAX_GAS_PRICE);
               cct = (0,_transaction__WEBPACK_IMPORTED_MODULE_4__["default"])(_objectSpread(_objectSpread({}, _args[0]), {}, {
@@ -8088,7 +8094,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
               crlogger = null;
               senderReqkey = null;
               param = _objectSpread(_objectSpread({}, _args2[0]), {}, {
-                xGasPrice: xGasPrice
+                xGasPrice: xGasPrice,
+                txType: _constant__WEBPACK_IMPORTED_MODULE_6__["default"].TX_CROSS_TRANSFER
               });
               cct = (0,_transaction__WEBPACK_IMPORTED_MODULE_4__["default"])(_objectSpread(_objectSpread({}, _args2[0]), {}, {
                 xGasPrice: xGasPrice

@@ -73,6 +73,11 @@ const C = {
     WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR: "The sender does not have enough keypairs to excute this transaction.",
     WORDS_SENDER_ACCOUNT_DOES_NOT_EXISTS: "The sender account does not exist.",
     WORDS_PUBKEY_NOT_MATCH_SENDER_GUARD: "The signing public key does not match the sender's guard.",
+
+    TX_SAME_TRANSFER: "s-transfer",
+    TX_CROSS_TRANSFER: "x-transfer",
+    TX_ROTATE: "rotate",
+    TX_CREATE_ACCOUNT: "create-account"
 };
 
 
