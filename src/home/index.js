@@ -295,7 +295,7 @@ const ModalStyle = styled.div`
                                     color: rgba(255,255,255,0.5);
                                     font-size: 10px;
                                     text-align: center;
-                                    color: #FFC900;
+                                    color: #f00;
                                 }
                             }
                         }
