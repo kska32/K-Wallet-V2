@@ -147,7 +147,7 @@ export default function AppInfo({visible, ...props}){
             <div className='author'>
                 <div>K:WALLET - V2.0.0</div>
                 <div>
-                    The wallet developed for managing kadena tokens in an secure and easiest way.
+                    The wallet developed for managing kadena tokens and txs in an secure and easiest way.
                 </div>
                 <div>
                     <span>Donate this project:</span>

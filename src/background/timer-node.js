@@ -7,6 +7,7 @@ import {
 import createTransfer from "./transaction";
 import * as ccxt from "ccxt";
 import C,{BackgroundState} from "./constant";
+import { SwitchVideo } from "@material-ui/icons";
 const deepCopy = o => JSON.parse(JSON.stringify(o));
 
 async function createTimerNode(infs){
@@ -111,7 +112,6 @@ export default async function InitTimerNode(){
                     const {key, param, count, maxCount, responds} = v;
                     const senderReqkey = key;
                     const senderChainId = v.param.senderChainId;
-                    const isxtransfer = v.param.senderChainId !== v.param.receiverChainId;
                     const crlogger = createReqLogger(senderReqkey, param, responds);
 
                     try{
@@ -124,10 +124,13 @@ export default async function InitTimerNode(){
                         }else{
                             const newResponds = [...responds, senderListenResult];
                             await crlogger.set(newResponds);
-                            if(isxtransfer){
-                                await proofAlarmDB.upsertItem(senderReqkey, {
-                                    count: 0, maxCount, param, responds: newResponds
-                                });
+                            switch(v.param.txType){
+                                case C.TX_CROSS_TRANSFER: {
+                                    await proofAlarmDB.upsertItem(senderReqkey, {
+                                        count: 0, maxCount, param, responds: newResponds
+                                    });
+                                    break;
+                                }
                             }
                             await db.deleteByKey(senderReqkey);
                         }

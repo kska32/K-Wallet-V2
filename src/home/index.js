@@ -11,7 +11,7 @@ import Button from '@material-ui/core/Button';
 import C from "../background/constant";
 import produce from "immer";
 
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import styled from "styled-components";
 import 'semantic-ui-css/semantic.min.css';
 import "./index.scss";
@@ -486,7 +486,7 @@ const DeleteModal = (props) => {
 }
 
 
-export const Main = (props)=>{
+export const Main = React.memo((props)=>{
     const syncBackgroundState = useSetRecoilState(vState);
     const [pageNum, setPageNum] = useRecoilState(vPageNumX);
     const hasAccount = useRecoilValue(vHasAccount);
@@ -558,16 +558,15 @@ export const Main = (props)=>{
         <ConfirmModal />
         <DeleteModal />
     </Wrapper>
-}
+});
 
 
-ReactDOM.render(
-    <Suspense fallback={<LoadingBox isLoading={true} />}>
-        <RecoilRoot>
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <RecoilRoot>
+        <Suspense fallback={<LoadingBox isLoading={true} />}>
             <Main/>
-        </RecoilRoot>
-    </Suspense>, 
-    document.getElementById('root')
+        </Suspense>
+    </RecoilRoot>
 );
 
 

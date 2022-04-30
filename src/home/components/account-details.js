@@ -1,7 +1,7 @@
 import React, {useState, useCallback} from "react";
 import styled from "styled-components";
 import {VisibleStyleComp} from "./styled.comp.js";
-import {CopiesButton} from "./special-buttons";
+import {CopiesButton, RotateMenu} from "./special-buttons";
 import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import C from "../../background/constant";
@@ -9,6 +9,7 @@ import {vAccountDetailsBX, vGetPublickeyListX2} from "../atoms";
 import {useRecoilValue} from 'recoil';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
 import {pubkeysMeetGuard} from "../../background/utils";
+import VpnKeySharpIcon from '@material-ui/icons/VpnKeySharp';
 
 const AccountDetailsWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -409,7 +410,18 @@ export const SearchBox = React.memo(({accountAddr='', visible}) => {
     </>
 });
 
+const  AccountDetailsCoreStyle = styled.div`
+    .ownwer-key{
+        font-size: 15px;
+        transform: translateY(2px);
+        color: #333;
+        cursor: pointer;
 
+        &:hover{
+            color: red;
+        }
+    }
+`;
 
 const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
     const [sym] = useState('-');
@@ -435,7 +447,7 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
         return JSON.stringify(result);
     }, []);
 
-    return <div>
+    return <AccountDetailsCoreStyle>
             <div>
                 <span>Chain.No</span>
                 <span>Owner</span>
@@ -446,7 +458,7 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
                 details.map((v,i)=>{
                     return <div key={i}>
                         <span>{(v?.guard) && <CopiesButton style={{position:'absolute', left:'10px'}} nobg minisize text={detailsItemEx(i,v)}/> }{String(i).padStart(2,'0')}</span>
-                        <span>{amOwner(v) ? '✓' : sym}</span>
+                        <span>{amOwner(v) ? <VpnKeySharpIcon className='ownwer-key' /> : sym}</span>
                         <span title={!!v.guard ? JSON.stringify(v?.guard) : ''}>
                             {v?.guard?.keys?.length}
                             {v?.guard?.keys?.length>0 ? ',' : ''}
@@ -459,7 +471,7 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
             {
                 details.length === 0 && <NoData>No Data</NoData>
             }
-     </div>
+     </AccountDetailsCoreStyle>
 });
 
 export default React.memo(function AccountDetails({details=[], accountAddr='', visible}){
