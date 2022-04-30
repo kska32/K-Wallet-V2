@@ -1,6 +1,6 @@
 import React, {useState, useCallback, useLayoutEffect} from "react";
 import styled from "styled-components";
-import {useRecoilState, useSetRecoilState} from 'recoil';
+import {useRecoilValue, useSetRecoilState} from 'recoil';
 
 import kadenaLogo from "../../icons/k-colen-logo.svg"
 import GitHubIcon from '@material-ui/icons/GitHub';
@@ -8,7 +8,7 @@ import EmailIcon from '@material-ui/icons/Email';
 import ThumbUpIcon from '@material-ui/icons/ThumbUp';
 import TelegramIcon from '@material-ui/icons/Telegram';
 
-import {tLastOnePageOpened} from "../atoms";
+import {tLastOnePageOpened, vGetAppInfo} from "../atoms";
 
 const Wrapper = styled.section`
     position: fixed ;
@@ -140,14 +140,15 @@ const Wrapper = styled.section`
 
 export default function AppInfo({visible, ...props}){
     const setLastOnePageOpened = useSetRecoilState(tLastOnePageOpened);
+    const {author, short_name, version} = useRecoilValue(vGetAppInfo);
 
     return <Wrapper visible={visible} className={props.className} onClick={()=>setLastOnePageOpened(false)}>
         <div className='contentBox' onClick={e=>e.stopPropagation()}>
             <div className='logo'></div>
             <div className='author'>
-                <div>K:WALLET - V2.0.0</div>
+                <div>{short_name} - {version}</div>
                 <div>
-                    The wallet developed for managing kadena tokens and txs in an secure and easiest way.
+                    The wallet developed for managing kadena tokens and txs<br/>in an secure and easiest way.
                 </div>
                 <div>
                     <span>Donate this project:</span>
@@ -156,7 +157,7 @@ export default function AppInfo({visible, ...props}){
                 <div>
                     <a href="https://chrome.google.com/webstore/detail/bfjdmoniilmnfleebdfpcchhjbmdffil" target='_blank'><ThumbUpIcon/></a>
                     <a href="https://t.me/sparrow32k" target='_blank'><TelegramIcon /></a>
-                    <a href="mailto:kska32@gmail.com" target='_blank'><EmailIcon /></a>
+                    <a href={`mailto:${author}`} target='_blank'><EmailIcon /></a>
                     <a href="https://github.com/kska32/K-Wallet" target='_blank'><GitHubIcon /></a>
                 </div>
             </div>

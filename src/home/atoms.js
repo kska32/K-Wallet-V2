@@ -185,3 +185,9 @@ export const vGetPublickeyListX2 = selector({
     key: 'getPublicKeyList',
     get: ({get}) => get(vKeypairListX).map(v=>v.publicKey)
 });
+
+
+export const vGetAppInfo = selector({
+    key: 'get-app-information',
+    get: ({get}) => chrome.runtime.getManifest()
+})

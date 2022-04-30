@@ -340,7 +340,7 @@ export default function({visible}){
     }, [isDark]);
 
     return <Wrapper visible={visible} >
-       <Body className='xBody'>
+        <Body className='xBody'>
             <Navbar className='xNavbar'>
                 <span className='left'>
                     <span>
@@ -388,15 +388,13 @@ export default function({visible}){
             </Dashboard>
             <LockProgressBar className='xLockProgressBar'/>
             <Sidebar visible={sidebarOpened} className='xSidebar' />
-       </Body>
-
-       <CircleButton onClick={refreshAccountDetails} className='refresh-button'>
+        </Body>
+        <CircleButton onClick={refreshAccountDetails} className='refresh-button'>
             <SyncIcon fontSize='medium'/>
         </CircleButton>
         <CircleButton onClick={e=>lockUp(true)} className='lock-button'>
             <LockIcon fontSize='medium'/>
         </CircleButton>
-
-         <AppInfo className='app-info' visible={lastOnePageOpened} />
+        <AppInfo className='app-info' visible={lastOnePageOpened} />
     </Wrapper>
 }

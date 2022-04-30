@@ -10,6 +10,7 @@ import {useRecoilValue} from 'recoil';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
 import {pubkeysMeetGuard} from "../../background/utils";
 import VpnKeySharpIcon from '@material-ui/icons/VpnKeySharp';
+import BuildRoundedIcon from '@material-ui/icons/BuildRounded';
 
 const AccountDetailsWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -99,9 +100,10 @@ const AccountDetailsWrapper = styled(VisibleStyleComp)`
 
                 }
                 &:nth-of-type(3){
-                    cursor: pointer;
+
                 }
                 &:nth-of-type(4){
+
                 }
             }
 
@@ -411,14 +413,43 @@ export const SearchBox = React.memo(({accountAddr='', visible}) => {
 });
 
 const  AccountDetailsCoreStyle = styled.div`
-    .ownwer-key{
-        font-size: 15px;
-        transform: translateY(2px);
-        color: #333;
-        cursor: pointer;
+    span.ownwer-key{
+        user-select: none;
+
+        &.yes{
+            cursor: pointer;
+        }
+
+        >span{
+            >svg{
+                transition: all 0.18s;
+                font-size: 15px;
+                transform: translateY(2px);
+                color: #333;
+                &:nth-of-type(1){
+                    opacity: 1;
+                }
+                &:nth-of-type(2){
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%,-50%);
+                    opacity: 0;
+                }
+            }
+        }
 
         &:hover{
-            color: red;
+            >span{
+                >svg{
+                    &:nth-of-type(1){
+                        opacity: 0;
+                    }
+                    &:nth-of-type(2){
+                        opacity: 1;
+                    }
+                }
+            }
         }
     }
 `;
@@ -456,9 +487,17 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
             </div>
             {
                 details.map((v,i)=>{
+                    const amo = amOwner(v);
                     return <div key={i}>
                         <span>{(v?.guard) && <CopiesButton style={{position:'absolute', left:'10px'}} nobg minisize text={detailsItemEx(i,v)}/> }{String(i).padStart(2,'0')}</span>
-                        <span>{amOwner(v) ? <VpnKeySharpIcon className='ownwer-key' /> : sym}</span>
+                        <span className={'ownwer-key' + ( amo ? ' yes' : ' no') } >
+                            {
+                                amo ? <span >
+                                    <VpnKeySharpIcon />
+                                    <BuildRoundedIcon />
+                                </span> : sym
+                            }
+                        </span>
                         <span title={!!v.guard ? JSON.stringify(v?.guard) : ''}>
                             {v?.guard?.keys?.length}
                             {v?.guard?.keys?.length>0 ? ',' : ''}
