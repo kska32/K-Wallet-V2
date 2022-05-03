@@ -401,14 +401,11 @@ const StepInfosItem = styled.div`
             line-height: 1rem;
  
             &:before{
-                content: '';
-                width: 10px;
-                height: 10px;
+                content: '•';
                 position: relative;
                 border-radius: 50%;
                 display: inline-flex;
-                background-color: #009688;
-                transform: translateY(8%) scale(0.6);
+                margin-right: 3px;
             }
         }
         &:nth-of-type(1){
@@ -441,14 +438,11 @@ const StepInfosItem = styled.div`
                         font-weight: bold;
                         align-self: center;
                         &:before{
-                            content: '';
-                            width: 10px;
-                            height: 10px;
+                            content: '•';
                             position: relative;
                             border-radius: 50%;
                             display: inline-flex;
-                            background-color: #009688;
-                            transform: translateY(8%) scale(0.6);
+                            margin-right: 3px;
                         }
 
                         &:nth-of-type(1){
@@ -504,10 +498,7 @@ const StepInfosItem = styled.div`
 
             }
         }
-
-
     }
-
 `;
 
 const NoTransaction = styled.div`
@@ -580,8 +571,8 @@ const LoadMoreMark = ({rootRef, style, visibleCallback, hiddenCallback}) => {
 export default React.memo(({visible})=>{
     const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysDataX);
     const [hasMore, setHasMore] = useState(true);
-    const errorData = useRecoilValue(vErrorDataX);
     const [infoData, setInfoData] = useRecoilState(vInfoDataX);
+    const errorData = useRecoilValue(vErrorDataX);
     const rootRef = useRef();
     const itemRefs = useRef([]);
 
@@ -611,30 +602,33 @@ export default React.memo(({visible})=>{
                 <Wrapper>
                 {
                     reqkeysData.map((v,i,a)=>{
+                        const {
+                            senderAccountName, senderChainId, 
+                            receiverAccountName, receiverChainId
+                        } = v?.param??{};
+
                         return <StepInfosItem key={v.key} ref={r=>itemRefs.current[i]=r}>
                             <div>
-                                <span>Rk: {(v?.reqKey??'').slice(0,8)}</span>
+                                <span>rk: {(v?.reqKey??'').slice(0,8)}</span>
                                 <span>{moment(v.timestamp).format("LL - LTS")}</span>
                                 <CloseSharpIcon className='delete' onClick={()=>{
                                     if(v?.reqKey){
                                         itemRefs.current[i].style='margin-top: -116px; opacity: 0; z-index:0;';
-                                        setTimeout(()=>{
-                                            chrome.runtime.sendMessage({
-                                                type: C.MSG_REMOVE_A_TX_RESULT, 
-                                                deleteKey: v.reqKey
-                                            },(res)=>{
-                                                if(res === true){
-                                                    setReqkeysData(produce((s)=>{ s.splice(i,1) }));
-                                                }
-                                            });
-                                        }, 180); 
+                                        chrome.runtime.sendMessage({
+                                            type: C.MSG_REMOVE_A_TX_RESULT, 
+                                            deleteKey: v.reqKey
+                                        },(res)=>{
+                                            if(res === true){
+                                                setReqkeysData(produce((s)=>{ s.splice(i,1) }));
+                                            }
+                                        });
                                     }
                                 }}/>
                             </div>
                             <div>
                                 <span>
-                                    <span>Fr: {(v?.param?.senderAccountName??'').slice(0,8)} - C{v?.param?.senderChainId??''}</span>
-                                    <span>To: {(v?.param?.receiverAccountName??'').slice(0,8)} - C{v?.param?.receiverChainId??''}</span>
+                                    <span>fr: {senderAccountName.slice(0,8)} - #{senderChainId}</span>
+                                    <span>to: {receiverAccountName?.slice(0,8)??senderAccountName.slice(0,8)} - #{receiverChainId??senderChainId}</span>
                                 </span>
                             </div>
                             <div>

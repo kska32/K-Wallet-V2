@@ -113,7 +113,7 @@ export default function({errorData, visible}){
         return !cc.some(v=>(errorData?.message??'').includes(v));
     },[errorData.message]);
 
-    return <Wrapper visible={visible}>
+    return <Wrapper visible={visible} className='error-info'>
         <div>
             <div className='reqkey'>
                 {errorData?.details?.reqKey??''}

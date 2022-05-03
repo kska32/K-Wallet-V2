@@ -45,6 +45,8 @@ const C = {
     MSG_GET_DARK_MODE: 'GET_DARK_MODE',
     MSG_SET_DARK_MODE: 'SET_DARK_MODE',
 
+    MSG_CHANGE_ACCOUNT_OWNERSHIP: 'CHANGE_ACCOUNT_OWNERSHIP',
+
     MSG_REMOVE_A_TX_RESULT: 'REMOVE_A_TX_RESULT',
     MSG_GET_FUNGIBLE_V2_TOKEN_LIST: 'GET_FUNGIBLE_V2_LIST',
     MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR: 'CHANGE_FUNGIBLE_V2_TOKEN_ADDRESS',
@@ -77,7 +79,9 @@ const C = {
     TX_SAME_TRANSFER: "s-transfer",
     TX_CROSS_TRANSFER: "x-transfer",
     TX_ROTATE: "rotate",
-    TX_CREATE_ACCOUNT: "create-account"
+    TX_CREATE_ACCOUNT: "create-account",
+
+    MARK_HAS_NO_PRIVATEKEY: '###',
 };
 
 
@@ -176,6 +180,12 @@ export const BackgroundState = {
             publicKey: '',
             privateKey: '',
             success: null,
+        },
+        rotateData:{
+            opened: false,
+            pred: "",
+            keys: [],
+            initial: {}
         },
         switchAccountBoxOpened: false,
         transferOpt: {

@@ -284,8 +284,7 @@ export async function createTimer(alarmName, when = 0, interval = 3, handler = (
 
 export function createReqLogger(reqKey, param={}, responds = [], success = false, finished = false, lastError = null){
     let ret = {reqKey, param, responds, success, finished, lastError, step: responds.length, tstep: 0};
-    const isxtransfer = param.senderChainId !== param.receiverChainId;
-    ret.tstep = isxtransfer ? 5 : 2;
+    ret.tstep = param.txType === C.TX_CROSS_TRANSFER ? 5 : 2;
 
     const ssm = async (k, v) => {
         //save to db and send msg to popup.

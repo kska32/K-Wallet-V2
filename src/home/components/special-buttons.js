@@ -18,7 +18,7 @@ import qrScanSvg from "../images/qr-scan-icon.svg";
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
-import HelpOutlinedIcon from '@material-ui/icons/HelpOutlined';
+
 
 const $CopiesButton = styled.div`
     position: relative;
@@ -187,6 +187,15 @@ const RippleButtonStyle = styled.button`
         height: 5px;
         pointer-events: none;
         z-index: 3;
+    }
+
+    ${
+        p => p.disabled === true && `
+            pointer-events: none !important;
+            color: #aaa !important;
+            box-shadow: none !important;
+            background-color: #d1d1d1 !important;
+        `
     }
 
 `;
@@ -1134,45 +1143,3 @@ export const LastOneButton = ({onClick, ...props}) => {
     </LastOneButtonWrapper>
 }
 
-
-
-//rotate-menu
-
-const RotateMenuWrapper = styled.div`
-    position: relative;
-    left: 0px;
-    top: 0px;
-`;
-
-const RotateMenuContent = styled.div`
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 300px;
-    height: 260px;
-    background-color: #eee;
-    border-radius: 5px;
-    color: #000;
-    display: none;
-    flex-flow: column nowrap;
-    border: thin solid black;
-    z-index: 5;
-
-    ${
-        p=>p.visible===true && `
-            display: flex;
-        `
-    }
-
-`;
-
-export const RotateMenu = ({...props}) => {
-    const [visible, setVisible] = useState(false);
-
-
-
-    return <RotateMenuWrapper onClick={()=>setVisible(s=>!s)}>
-        {props.children}
-        <RotateMenuContent visible={visible} />
-    </RotateMenuWrapper>
-}

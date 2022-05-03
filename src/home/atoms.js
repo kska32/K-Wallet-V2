@@ -175,6 +175,8 @@ export const vPrivateKeyPageX = set('privateKeyPage');
 
 export const vDeleteDataX = set('deleteData');
 
+export const vRotateDataX = set('rotateData');
+
 export const vImportPrikeyPageX = set('importPriKeyPage');
 
 export const vChangePasswordPageX = set('changePasswordPage');
@@ -186,8 +188,14 @@ export const vGetPublickeyListX2 = selector({
     get: ({get}) => get(vKeypairListX).map(v=>v.publicKey)
 });
 
+export const vGetPublickeyListOptionX2 = selector({
+    key: 'getPublicKeyListOption',
+    get: ({get}) => get(vKeypairListX).map((v)=>({
+        key:v.publicKey, text:v.publicKey, value:v.publicKey
+    }))
+});
 
 export const vGetAppInfo = selector({
     key: 'get-app-information',
     get: ({get}) => chrome.runtime.getManifest()
-})
+});

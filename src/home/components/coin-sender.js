@@ -336,6 +336,7 @@ const DropdownItem = styled.span`
         
         &.text{
             width: 100%;
+            font-size: 13.2px;
         }
 
         &.remove{
@@ -415,6 +416,8 @@ export default React.memo(function CoinSender({visible}){
 
     const onAddItemHandle = useCallback((value)=>{
         const vu = value.trim();
+        if(vu.length === 0) return;
+
         setTransferOpt(produce((s)=>{
             s.receiverAccountName = vu;
         }));
@@ -430,11 +433,12 @@ export default React.memo(function CoinSender({visible}){
     }, []);
 
     const transferAllow = useCallback((t)=>{
-        let isReceiverAddrValid = t.receiverAccountName.trim().length > 0;
-        let sameAccountSameChainid = t.senderAccountName === t.receiverAccountName && t.senderChainId === t.receiverChainId;
+        if(!reAddrLstDropdownOpt.some((x)=>x.value.includes(t.receiverAccountName))) return false;
+        if(t.receiverAccountName.trim().length === 0) return false;
+        if(t.senderAccountName === t.receiverAccountName && t.senderChainId === t.receiverChainId) return false;
         if(t.amount <= 0) return false;
-        return !!(isReceiverAddrValid & !sameAccountSameChainid);
-    }, []);
+        return true;
+    }, [reAddrLstDropdownOpt]);
 
     const minGasPrice = useMemo(()=>networkId.includes('testnet') ? C.MIN_GAS_PRICE : 1e-8, [networkId]);
     const minGasLimit = C.MIN_GAS_LIMIT;

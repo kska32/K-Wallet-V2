@@ -1,16 +1,17 @@
 import React, {useState, useCallback} from "react";
 import styled from "styled-components";
 import {VisibleStyleComp} from "./styled.comp.js";
-import {CopiesButton, RotateMenu} from "./special-buttons";
+import {CopiesButton} from "./special-buttons";
 import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import C from "../../background/constant";
-import {vAccountDetailsBX, vGetPublickeyListX2} from "../atoms";
-import {useRecoilValue} from 'recoil';
+import {vAccountDetailsBX, vGetPublickeyListX2, vRotateDataX} from "../atoms";
+import {useRecoilValue, useRecoilState} from 'recoil';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
 import {pubkeysMeetGuard} from "../../background/utils";
 import VpnKeySharpIcon from '@material-ui/icons/VpnKeySharp';
 import BuildRoundedIcon from '@material-ui/icons/BuildRounded';
+import produce from "immer";
 
 const AccountDetailsWrapper = styled(VisibleStyleComp)`
     position: relative;
@@ -419,6 +420,9 @@ const  AccountDetailsCoreStyle = styled.div`
         &.yes{
             cursor: pointer;
         }
+        &.no{
+            pointer-events: none;
+        }
 
         >span{
             >svg{
@@ -457,6 +461,7 @@ const  AccountDetailsCoreStyle = styled.div`
 const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
     const [sym] = useState('-');
     const publicKeyList = useRecoilValue(vGetPublickeyListX2);
+    const [rotateData, setRotateData] = useRecoilState(vRotateDataX);
 
     const amOwner = useCallback((v)=>{
         return pubkeysMeetGuard(publicKeyList, v?.guard??null);
@@ -478,6 +483,19 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
         return JSON.stringify(result);
     }, []);
 
+    const openRotateModal = useCallback(({account, chainId, guard: {pred, keys}})=>{
+
+        setRotateData(produce((s)=>{
+            s.opened = true;
+            s.pred = pred;
+            s.keys = keys;
+            s.chainId = chainId;
+            s.account = account;
+            s.initial = {pred, keys, chainId, account};
+        }));      
+
+    },[]);
+
     return <AccountDetailsCoreStyle>
             <div>
                 <span>Chain.No</span>
@@ -490,7 +508,7 @@ const AccountDetailsCore = React.memo(({details=[], accountAddr=''}) => {
                     const amo = amOwner(v);
                     return <div key={i}>
                         <span>{(v?.guard) && <CopiesButton style={{position:'absolute', left:'10px'}} nobg minisize text={detailsItemEx(i,v)}/> }{String(i).padStart(2,'0')}</span>
-                        <span className={'ownwer-key' + ( amo ? ' yes' : ' no') } >
+                        <span className={'ownwer-key' + (amo ? ' yes' : ' no') } onClick={()=>openRotateModal(v)}>
                             {
                                 amo ? <span >
                                     <VpnKeySharpIcon />

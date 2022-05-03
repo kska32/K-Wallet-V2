@@ -513,6 +513,30 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state = await setUserOptions({isDark});
             return StateManager.set(state);
         }
+        case C.MSG_CHANGE_ACCOUNT_OWNERSHIP:{
+            const {
+                senderAccountName, 
+                senderChainId, 
+                pred, keys, 
+                gasPrice = 1e-8, 
+                gasLimit = 600, 
+                ttl = 28800
+            } = message;
+
+            await setLoading(true);
+            const {networkId, tokenAddress} = await StateManager.get(['networkId', 'tokenAddress']);
+
+            await Transfer.changeOwnership({
+                networkId, tokenAddress, 
+                senderAccountName, senderChainId, 
+                pred, keys, gasPrice, gasLimit, ttl
+            });
+
+            const state = {};
+            state.rotateData = {opened: false, pred: "", keys: [], initial: {}};
+            state.isLoading = {opened: false, text: null};
+            return StateManager.set(state);
+        }
         case C.MSG_REQ_USERDATA_FROM_WEBPAGE:{
             // sender: {
             //    documentId, frameId, id, origin, 
@@ -704,8 +728,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
                     //Error: Duplicate script ID 'k-wallet-scripting-id'
                 }
             }
-        )
-        
+        );
     }
 });
 

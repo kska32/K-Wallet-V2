@@ -50,7 +50,6 @@ export default function(){
             await crlogger.set([senderReqkeyResult]);
             await senderReqkeyAlarmDB.upsertItem(senderReqkey, {
                 count: 0, maxCount: MAX_COUNT, param, responds: [senderReqkeyResult]
-                //,txType: "TRANSACTION_TYPE"
             });
         }catch(err){
             if(crlogger !== null){
@@ -154,7 +153,9 @@ export default function(){
             }
             await reqkeysDB.upsertItem(reqkey, {lastError: null, continueCount});
             await crlogger.set(responds);
-            await alarmDbs[responds.length - 1].upsertItem(senderReqkey, {count: 0, maxCount: MAX_COUNT, param, responds});
+            await alarmDbs[responds.length - 1].upsertItem(senderReqkey, {
+                count: 0, maxCount: MAX_COUNT, param, responds
+            });
             return true;
         }catch(err){
             SendErrorMessage('continue.no.conn.transfer', 0, err, param);
@@ -229,6 +230,46 @@ export default function(){
         }
     }
 
+    async function changeOwnership({
+        senderAccountName, 
+        senderChainId, 
+        pred, 
+        keys,
+        networkId, 
+        tokenAddress,
+        gasPrice = 1e-8, 
+        gasLimit = 600, 
+        ttl = 28800
+    }){
+        let param = {...arguments[0], txType: C.TX_ROTATE};
+
+        let crlogger = null;
+        const cct = createTransfer(arguments[0]);
+
+        try{
+            let senderDetails = await cct.getAcctDetails(senderAccountName, senderChainId);
+            let hasMeet = await hasMeetGuard(senderDetails.guard);
+            if(hasMeet !== true){
+                throw C.WORDS_SENDER_HAS_NOT_ENOUGH_KEYPAIR;
+            }
+
+            const specifiedKeypairs = await getKeypairFromPubkey(senderDetails.guard.keys);
+            cct.setKeypairs(specifiedKeypairs);
+            
+            const rotateReqkeyResult = await cct.rotate({pred, keys});
+            const rotateReqkey = rotateReqkeyResult.requestKeys[0];
+            crlogger = createReqLogger(rotateReqkey, param); 
+            await crlogger.set([rotateReqkeyResult]);
+            await senderReqkeyAlarmDB.upsertItem(rotateReqkey, {
+                count: 0, maxCount: MAX_COUNT, param, responds: [rotateReqkeyResult]
+            });
+        }catch(err){
+            SendErrorMessage('account.rotate', 0, err, param);
+            throw err;
+        }
+        
+    }
+
     return {
         getAcctDetailsForAllChains,
         initAccountForAnyChains,
@@ -236,7 +277,8 @@ export default function(){
         crosschainTransfer,
         justTransfer,
         continueErrorTransfer,
-        searchFungibleV2token
+        searchFungibleV2token,
+        changeOwnership
     }
 }
 

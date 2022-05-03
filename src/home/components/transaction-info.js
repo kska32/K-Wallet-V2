@@ -41,8 +41,9 @@ const Wrapper = styled.div`
     }
 
     >div{
-        padding: 20px;
+        position: relative;
         width: 100%;
+        padding: 30px 20px;
         border-radius: 5px;
 
         >div{
@@ -120,6 +121,12 @@ const Wrapper = styled.div`
 export default function({infoData, visible}){
     const setInfoData = useSetRecoilState(vInfoDataX);
 
+    const {
+        senderAccountName, senderChainId, 
+        receiverAccountName, receiverChainId,
+        amount
+    } = infoData?.details??{};
+
     return <Wrapper visible={visible} className='tx-info'>
         <div>
             <div className='title'>Transaction</div>
@@ -137,22 +144,24 @@ export default function({infoData, visible}){
             </div>
             <div className='from'>
                 <div className='tag'>From: </div>
-                <div>{infoData?.details?.senderAccountName??''}</div>
-                <div>ChainId: {infoData?.details?.senderChainId??''}</div>
+                <div>{senderAccountName}</div>
+                <div>ChainId: {senderChainId}</div>
             </div>
             <div className='to'>
                 <div className='tag'>To: </div>
-                <div>{infoData?.details?.receiverAccountName??''}</div>
-                <div>ChainId: {infoData?.details?.receiverChainId??''}</div>
+                <div>{receiverAccountName ?? senderAccountName}</div>
+                <div>ChainId: {receiverChainId ?? senderChainId}</div>
             </div>
-            <div className='amount'>
+            {amount && <div className='amount'>
                 <div className='tag'>Amount: </div>
-                <div>{infoData?.details?.amount??''}</div>
-            </div>
+                <div>{amount}</div>
+            </div>}
             <div className='maxfee'>
                 <div className='tag'>MaxTransactionFee:</div>
                 <div>{(infoData?.details?.gasPrice??0) * (infoData?.details?.gasLimit??0)}</div>
             </div>
+
+            <div style={{flex:1}}></div>
             <div className='cancel'>
                 <Button variant="contained" onClick={()=>{ 
                     setInfoData(produce((s)=>{

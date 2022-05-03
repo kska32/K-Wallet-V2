@@ -115,27 +115,7 @@ export default function({transferOpt, visible, cancelConfirm}){
         chrome.runtime.sendMessage({
             type: C.MSG_JUST_TRANSFER, 
             transferOpt
-        });
-        const handler = (message) => {
-            let {type,key,value} = message;
-            switch(type){
-                case C.FMSG_TRANSFER_PROGRESS: {
-                    if(value.step === 1){
-                        chrome.runtime.sendMessage({
-                            type: C.MSG_GET_RECENT_REQKEYS_DATA, 
-                            limit: reqkeysData.length + 1
-                        }, (res)=>{
-                            chrome.runtime.onMessage.removeListener(handler);
-                            setReqkeysData(res);
-                        });
-                    }
-                    break;
-                }
-            }
-            return true;
-        }
-        
-        chrome.runtime.onMessage.addListener(handler);
+        });        
     }, [transferOpt, reqkeysData]);
 
 
