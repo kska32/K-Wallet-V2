@@ -447,8 +447,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             return StateManager.set({networkId: networkIdValue});
         }
         case C.MSG_CHANGE_NETWORKID: {
-            const {networkId} = message;
             await setLoading(true);
+            const {networkId} = message;
             let state = await StateManager.get();
             state = await setUserOptions({networkId});
             const accountAddr = 'k:' + state.keypairHex.publicKey;
@@ -514,18 +514,13 @@ chrome.runtime.onInstalled.addListener(async()=>{
             return StateManager.set(state);
         }
         case C.MSG_CHANGE_ACCOUNT_OWNERSHIP:{
-            const {
-                senderAccountName, 
-                senderChainId, 
-                pred, keys, 
-                gasPrice = 1e-8, 
-                gasLimit = 600, 
-                ttl = 28800
-            } = message;
-
             await setLoading(true);
+            const {
+                senderAccountName, senderChainId, 
+                pred, keys, 
+                gasPrice = 1e-8, gasLimit = 600, ttl = 28800
+            } = message;
             const {networkId, tokenAddress} = await StateManager.get(['networkId', 'tokenAddress']);
-
             await Transfer.changeOwnership({
                 networkId, tokenAddress, 
                 senderAccountName, senderChainId, 

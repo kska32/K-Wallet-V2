@@ -1,6 +1,6 @@
 import React,{useState, useCallback, useLayoutEffect, useEffect} from "react";
 import styled from "styled-components";
-import {useRecoilValue, useRecoilState} from 'recoil';
+import {useRecoilValue, useRecoilState, useSetRecoilState} from 'recoil';
 import produce from "immer";
 import Button from '@material-ui/core/Button';
 import ErrorOutlineOutlinedIcon from '@material-ui/icons/ErrorOutlineOutlined';
@@ -11,10 +11,9 @@ import {isValidKey} from "../../background/utils";
 import {RippleButton} from "./special-buttons";
 
 import {
-    vGlobalErrorDataX, vConfirmDataX, vDeleteDataX, 
-    vRotateDataX, vGetPublickeyListOptionX2
+    vGlobalErrorDataX, vConfirmDataX, vDeleteDataX, vRecentReqkeysData,
+    vRotateDataX, vGetPublickeyListOptionX2, vVisibleReqkeyCountX, vIsLoadingX
 } from "../atoms.js";
-
 
 
 const ModalStyle = styled.div`
@@ -394,21 +393,24 @@ const RotateModalWrapper = styled.div`
         >div.core{
             position: relative;
             box-shadow: 6px 8px 5px 3px rgba(0,0,0,0.3);
-            width: 600px;
+            width: 630px;
             min-height: 400px;
             background-color: white;
             background-color: #4cc9f0;
-            padding: 30px;
+            padding: 30px 45px;
+            border-radius: 5px;
 
             h1{
                 margin: 5px 0px 6px;
                 text-transform: uppercase;
+                user-select: none;
+                margin-top: 20px;
             }
 
             .accountChainId{
                 font-size: 13.2px;
                 margin-bottom: 36px;
-                color: rgba(255,255,255,0.6);
+                color: rgba(255,255,255,0.8);
                 user-select: none;
             }
 
@@ -454,13 +456,15 @@ const RotateModalWrapper = styled.div`
                 border-radius: 4px;
                 margin: 38px 0px 10px 0px;
                 height: 36px;
-                background-color: #ffaa00;
+                background-color: #80ffdb;
+                opacity: 0.8876;
                 color: #000;
                 font-size: 13px;
                 text-transform: uppercase;
+                box-shadow: none;
 
                 &:hover{
-                    background-color: #ffb700;
+                    opacity: 1;
                 }
 
                 &:active{
@@ -497,6 +501,9 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
     const publicKeyListOption = useRecoilValue(vGetPublickeyListOptionX2);
     const [publicKeyListOptionExt, setPublicKeyListOptionExt] = useState([]);
     const [otherPubkeyListOption, setOtherPubkeyListOption] = useState([]);
+    const reqkeysData = useRecoilValue(vRecentReqkeysData);
+    const setVisibleReqkeyCount = useSetRecoilState(vVisibleReqkeyCountX);
+    const setLoading = useSetRecoilState(vIsLoadingX);
 
     const close = useCallback(()=>{
         setRotateData(produce((s)=>{
@@ -506,7 +513,6 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
 
     const changeAllow = useCallback((d)=>{
         if(d.keys.length === 0) return false;
-
         const sortedKeysA = JSON.stringify(d.keys.slice().sort((a,b)=>a>b?1:-1));
         const sortedKeysZ = JSON.stringify(d.initial.keys.slice().sort((a,b)=>a>b?1:-1));
         if((sortedKeysA + d.pred) === (sortedKeysZ + d.initial.pred)) return false;
@@ -595,12 +601,16 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
             <RippleButton 
                 className='changeOwnership' 
                 disabled={!changeAllow(rotateData)} 
-                onClick={()=>onSubmit({
-                    senderAccountName: rotateData.account, 
-                    senderChainId: rotateData.chainId, 
-                    keys: rotateData.keys, 
-                    pred: rotateData.pred
-                })}
+                onClick={()=>{
+                    setLoading({opened: true});
+                    setVisibleReqkeyCount(reqkeysData.length);
+                    onSubmit({
+                        senderAccountName: rotateData.account, 
+                        senderChainId: rotateData.chainId, 
+                        keys: rotateData.keys, 
+                        pred: rotateData.pred
+                    })
+                }}
             >
                 Change Ownership
             </RippleButton>

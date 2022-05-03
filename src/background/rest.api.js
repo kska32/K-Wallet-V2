@@ -4,7 +4,7 @@ import C from "./constant";
 import {createReqLogger, SendErrorMessage, isValidKAccount, hasMeetGuard, getKeypairFromPubkey} from "./utils";
 
 export default function(){
-    const MAX_COUNT = 60;
+    const MAX_COUNT = 100;
 
     async function samechainTransfer({
         senderAccountName,

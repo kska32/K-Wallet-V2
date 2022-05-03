@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "K:Wallet V2",
+  "name": "K:Wallet",
   "short_name": "k:wallet",
   "author": "kska32@gmail.com",
   "description": "__MSG_description__",
@@ -14,13 +14,13 @@
     "tabs"
   ],
   "host_permissions": [
-    "http://*/*", "https://*/*"
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background/index.js"
   },
   "action": {
-    "default_title": "K:Wallet V2",
+    "default_title": "K:Wallet",
     "default_icon": "icons/k128.png"
   },
   "commands": {

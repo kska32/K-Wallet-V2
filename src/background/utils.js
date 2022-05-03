@@ -288,8 +288,11 @@ export function createReqLogger(reqKey, param={}, responds = [], success = false
 
     const ssm = async (k, v) => {
         //save to db and send msg to popup.
+        const {visibleReqkeyCount} = await StateManager.get('visibleReqkeyCount');
         await reqkeysDB.upsertItem(reqKey, ret);
-        chrome.runtime.sendMessage({type: C.FMSG_TRANSFER_PROGRESS, key: k, value: v}, sendMessageErrHandle);
+        chrome.runtime.sendMessage({
+            type: C.FMSG_TRANSFER_PROGRESS, key: k, value: v, visibleReqkeyCount
+        }, sendMessageErrHandle);
         return v;
     }
     

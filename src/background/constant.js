@@ -215,7 +215,8 @@ export const BackgroundState = {
         },
         changePasswordPage: {
             opened: false
-        }
+        },
+        visibleReqkeyCount: 0
     }
 
 

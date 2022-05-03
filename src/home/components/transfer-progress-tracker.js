@@ -407,6 +407,11 @@ const StepInfosItem = styled.div`
                 display: inline-flex;
                 margin-right: 3px;
             }
+
+            &.txType{
+                text-transform: capitalize;
+                text-shadow: 0px 0px 1px rgba(0,0,0,1);
+            }
         }
         &:nth-of-type(1){
             >span{
@@ -602,33 +607,38 @@ export default React.memo(({visible})=>{
                 <Wrapper>
                 {
                     reqkeysData.map((v,i,a)=>{
-                        const {
+                        let {
                             senderAccountName, senderChainId, 
                             receiverAccountName, receiverChainId
                         } = v?.param??{};
 
                         return <StepInfosItem key={v.key} ref={r=>itemRefs.current[i]=r}>
                             <div>
-                                <span>rk: {(v?.reqKey??'').slice(0,8)}</span>
+                                <span className='txType'>{v?.param?.txType}</span>
+                                <span>Rk: {(v?.reqKey??'').slice(0,8)}</span>
                                 <span>{moment(v.timestamp).format("LL - LTS")}</span>
                                 <CloseSharpIcon className='delete' onClick={()=>{
                                     if(v?.reqKey){
                                         itemRefs.current[i].style='margin-top: -116px; opacity: 0; z-index:0;';
-                                        chrome.runtime.sendMessage({
-                                            type: C.MSG_REMOVE_A_TX_RESULT, 
-                                            deleteKey: v.reqKey
-                                        },(res)=>{
-                                            if(res === true){
-                                                setReqkeysData(produce((s)=>{ s.splice(i,1) }));
-                                            }
-                                        });
+                                        setTimeout(()=>{
+                                            chrome.runtime.sendMessage({
+                                                type: C.MSG_REMOVE_A_TX_RESULT, 
+                                                deleteKey: v.reqKey
+                                            },(res)=>{
+                                                if(chrome.runtime.lastError){ 
+                                                    //
+                                                }else if(res === true){
+                                                    setReqkeysData(produce((s)=>{ s.splice(i,1) }));
+                                                }
+                                            });
+                                        }, 180);
                                     }
                                 }}/>
                             </div>
                             <div>
                                 <span>
-                                    <span>fr: {senderAccountName.slice(0,8)} - #{senderChainId}</span>
-                                    <span>to: {receiverAccountName?.slice(0,8)??senderAccountName.slice(0,8)} - #{receiverChainId??senderChainId}</span>
+                                    <span>Fr: {senderAccountName.slice(0,8)} - #{senderChainId}</span>
+                                    <span>To: {receiverAccountName?.slice(0,8)??senderAccountName.slice(0,8)} - #{receiverChainId??senderChainId}</span>
                                 </span>
                             </div>
                             <div>

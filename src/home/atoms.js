@@ -153,6 +153,8 @@ export const vTransferOptX = set('transferOpt');
 
 export const vTransferConfirmOpenedX = set('transferConfirmOpened');
 
+export const vVisibleReqkeyCountX = set('visibleReqkeyCount');
+
 export const vErrorDataX = set('errorData');
 
 export const vInfoDataX = set('infoData');

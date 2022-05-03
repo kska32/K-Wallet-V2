@@ -153,8 +153,8 @@ export const Main = React.memo((props)=>{
     },[]);
 
     useLayoutEffect(()=>{
-        chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
-            const {type} = msg;
+        chrome.runtime.onMessage.addListener(async (msg,sender,sendResponse)=>{
+            const {type, visibleReqkeyCount} = msg;
             switch(type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
                     delete msg.type;
@@ -178,7 +178,7 @@ export const Main = React.memo((props)=>{
                         case 1:{
                             chrome.runtime.sendMessage({
                                 type: C.MSG_GET_RECENT_REQKEYS_DATA, 
-                                limit: reqkeysData.length + 1
+                                limit: visibleReqkeyCount + 1 
                             }, (res)=>{
                                 setReqkeysData(res);
                             });
