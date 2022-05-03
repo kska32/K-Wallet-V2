@@ -510,6 +510,7 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
         const sortedKeysA = JSON.stringify(d.keys.slice().sort((a,b)=>a>b?1:-1));
         const sortedKeysZ = JSON.stringify(d.initial.keys.slice().sort((a,b)=>a>b?1:-1));
         if((sortedKeysA + d.pred) === (sortedKeysZ + d.initial.pred)) return false;
+        if(d.pred === 'keys-2' && d?.keys?.length < 2) return false;
 
         return true;
     }, []);
