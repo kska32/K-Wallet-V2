@@ -14,7 +14,7 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://*/*"
+    "http://*/*", "https://*/*"
   ],
   "background": {
     "service_worker": "background/index.js"
