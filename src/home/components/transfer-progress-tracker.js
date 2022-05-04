@@ -40,13 +40,6 @@ const Transactions = styled(VisibleStyleComp)`
             background-color: #eee;
             color: #666;
             box-sizing: border-box;
-            padding: 20px 20px;
-            overflow-x: hidden;
-            overflow-y: auto;
-            
-            &::-webkit-scrollbar {
-                width: 0px;
-            }
         }
     }
 `;
@@ -363,6 +356,14 @@ const StepProgressBar = React.memo(({item}) => {
 const Wrapper = styled.div`
     position: relative;
     width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 20px 20px;
+
+    &::-webkit-scrollbar {
+        width: 0px;
+    }
 `;
 
 
@@ -426,7 +427,8 @@ const StepInfosItem = styled.div`
                 color: #009688;
                 cursor: pointer;
                 font-size: 16.5px;
-                transform: scale(0.8);
+                margin-top: -2px;
+                margin-right: -3px;
                 &:hover{
                     color: #000;
                 }
@@ -436,9 +438,6 @@ const StepInfosItem = styled.div`
             >span{
 
                 &:nth-of-type(1){
-                    &:before{
-                        display: none;
-                    }
                     >span{
                         font-weight: bold;
                         align-self: center;
@@ -466,11 +465,13 @@ const StepInfosItem = styled.div`
         }
 
         &:nth-of-type(3){
-            span{
+            >span{
                 &:nth-of-type(1){
                 
                 }
             }
+
+
         }
 
         &:nth-of-type(4){
@@ -609,17 +610,19 @@ export default React.memo(({visible})=>{
                     reqkeysData.map((v,i,a)=>{
                         let {
                             senderAccountName, senderChainId, 
-                            receiverAccountName, receiverChainId
+                            receiverAccountName, receiverChainId,
+                            txType, networkId, tokenAddress, amount,
+                            keys, pred
                         } = v?.param??{};
 
-                        return <StepInfosItem key={v.key} ref={r=>itemRefs.current[i]=r}>
+                        return <StepInfosItem key={v.key} ref={r=>itemRefs.current[v.key]=r}>
                             <div>
                                 <span className='txType'>{v?.param?.txType}</span>
                                 <span>Rk: {(v?.reqKey??'').slice(0,8)}</span>
                                 <span>{moment(v.timestamp).format("LL - LTS")}</span>
                                 <CloseSharpIcon className='delete' onClick={()=>{
                                     if(v?.reqKey){
-                                        itemRefs.current[i].style='margin-top: -116px; opacity: 0; z-index:0;';
+                                        itemRefs.current[v.key].style='margin-top: -116px; opacity: 0; z-index:0;';
                                         setTimeout(()=>{
                                             chrome.runtime.sendMessage({
                                                 type: C.MSG_REMOVE_A_TX_RESULT, 
@@ -636,22 +639,32 @@ export default React.memo(({visible})=>{
                                 }}/>
                             </div>
                             <div>
-                                <span>
-                                    <span>Fr: {senderAccountName.slice(0,8)} - #{senderChainId}</span>
-                                    <span>To: {receiverAccountName?.slice(0,8)??senderAccountName.slice(0,8)} - #{receiverChainId??senderChainId}</span>
+                                <span>Ta: {tokenAddress}</span>
+                                <span>Ni: {networkId}</span>
+                                <span style={{maxWidth: '100px'}}>
+                                    Mt: {amount||0}
                                 </span>
                             </div>
-                            <div>
-                                <span>{v.param.tokenAddress}</span>
-                                <span>{v.param.networkId}</span>
-                                <span style={{maxWidth: '100px'}}>
-                                    {v?.param?.amount??0}
-                                </span>
+                            <div className={txType}>
+                                {txType === C.TX_SAME_TRANSFER || txType === C.TX_CROSS_TRANSFER &&
+                                    <>
+                                        <span>Fr: {senderAccountName.slice(0,12)} - #{senderChainId}</span>
+                                        <span>To: {receiverAccountName?.slice(0,12)??senderAccountName.slice(0,12)} - #{receiverChainId??senderChainId}</span>
+                                    </>
+                                }
+                                {txType === C.TX_ROTATE && 
+                                    <>
+                                        <span>Ac: {senderAccountName.slice(0,8)} - #{senderChainId}</span>
+                                        <span title={JSON.stringify({pred,keys})}>
+                                            Nw: {pred}, {keys.map(k=>k.slice(0,8)+'..').join(',')}
+                                        </span>
+                                    </>
+                                }
                             </div>
                             <div>
                                 <StepProgressBar item={v} />
                                 <ExploreOutlinedIcon onClick={()=>{
-                                    window.open(exploreLink(v.reqKey, v.param.networkId), "_blank")
+                                    window.open(exploreLink(v.reqKey, networkId), "_blank")
                                 }}/>
                                 <MoreOutlinedIcon onClick={()=>{
                                     setInfoData(produce((s)=>{ 

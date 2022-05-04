@@ -192,6 +192,7 @@ export const Main = React.memo((props)=>{
                     break;
                 }
             }
+            sendResponse(true);
             return true;
         });
     }, []);

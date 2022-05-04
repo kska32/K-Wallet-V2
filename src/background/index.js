@@ -49,7 +49,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
         case C.MSG_SET_STATE: {
             let state = await StateManager.get();
             state = {...state, ...message.value};
-            return await StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_SAVE_PASS:{
             await setLoading(true);
@@ -90,7 +91,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 state.isLoading = {opened: false, text: null};
                 sendResponse({ success: false, error: "No Passwords" });
             }
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_VERIFY_PASSWORD: {
             if(message?.value?.password){
@@ -134,7 +136,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
                         sendResponse({ success: false, error: 'Incorrect Password' });
                     }
                 }
-                return StateManager.set(state);
+                await StateManager.set(state);
+                break;
             }else{
                 sendResponse({
                     success: false, 
@@ -151,8 +154,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
         }
         case C.MSG_GET_KDA_PRICE:{
             const res = await userOptionsDB.getItem('kda-price');
-            sendResponse(res?.value??0);
-            return true;
+            return sendResponse(res?.value??0);
         }
         case C.MSG_VALIDATE_CURRENT_PASSWORD: {
             const {currentPassword} = message;
@@ -216,7 +218,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const {accountAddr, nullChainIds} = message;
             const state = await StateManager.get();
             await Transfer.initAccountForAnyChains(accountAddr, nullChainIds, state.networkId);
-            return true;
+            break;
         }
         case C.MSG_CHANGE_SELECTED_ACCOUNT: {
             await setLoading(true);
@@ -243,7 +245,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state.senderAddrList = await createSenderAddrList();
             state.receiverAddrList = await createReceiverAddrList();
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_REMOVE_ACCOUNT: {
             const { removeKey } = message;
@@ -260,7 +263,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 publicKey: '',
                 opened: false
             }
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_REMOVE_RECEIVER_ACCOUNT_NAME: {
             const {accountName} = message;
@@ -270,7 +274,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 let state = {};
                 await accountAddrsDB.deleteByKey(accountName);
                 state.receiverAddrList = await createReceiverAddrList();
-                return StateManager.set(state);
+                await StateManager.set(state);
             }
             break;
         }
@@ -345,7 +349,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 state.keypairList = await createKeypairList();
                 state.importPriKeyPage.opened = false;
                 state.isLoading = {opened: false, text: null};
-                return StateManager.set(state);
+                await StateManager.set(state);
+                break;
             }else{
                 return sendResponse({ success: false, error: 'Invalid Private Key.'});
             }
@@ -354,7 +359,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             await StateManager.set({pageNum: 5});
             let state = await StateManager.get();
             state = {...deepCopy(BackgroundState), networkId: state.networkId};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_GET_ACCOUNT_DETAILS: {
             await setLoading(true);
@@ -363,7 +369,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state = {};
             state.accountDetails = await getAccountDetails(message.accountId, networkId, tokenAddress);
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_GET_ACCOUNT_DETAILS_B: {
             await setLoading(true);
@@ -372,7 +379,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state = {};
             state.accountDetailsB = await getAccountDetails(message.accountId, networkId, tokenAddress);
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_UPSERT_A_RECEIVER_ADDR: {
             let {receiverAccountName} = message;
@@ -383,7 +391,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             let state = {};
             state.receiverAddrList = await createReceiverAddrList();
             state.transferOpt.receiverAccountName = receiverAccountName;
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_GENERATE_RANDOM_KEYPAIR: {
             await setLoading(true);
@@ -401,7 +410,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             state.receiverAddrList = await createReceiverAddrList();
             state.isLoading = {opened: false, text: null};
             state.confirmData = {opened: false, message: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_JUST_TRANSFER: {
             await setLoading(true);
@@ -419,7 +429,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
             }else{
                 throw 'Incorrect Password.';
             }
-            return true;
+            break;
         }
         case C.MSG_CONTINUE_ERROR_TRANSFER: {
             const {reqkey} = message;
@@ -444,7 +454,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
         case C.MSG_GET_NETWORKID: {
             const {networkId} = await StateManager.get('networkId');
             const networkIdValue = await getUserOptions({networkId});
-            return StateManager.set({networkId: networkIdValue});
+            await StateManager.set({networkId: networkIdValue});
+            break;
         }
         case C.MSG_CHANGE_NETWORKID: {
             await setLoading(true);
@@ -454,14 +465,16 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const accountAddr = 'k:' + state.keypairHex.publicKey;
             state.accountDetails = await getAccountDetails(accountAddr, state.networkId, state.tokenAddress);
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_GET_AUTOLOCK_PERIOD: {
             const {limitTime} = await StateManager.get('limitTime');//default limitTime
             const rt = await getUserOptions({
                 autoLockupTime: { limitTime, endTime: Date.now() + limitTime }
             });
-            return StateManager.set({limitTime: rt.limitTime});
+            await StateManager.set({limitTime: rt.limitTime});
+            break;
         }
         case C.MSG_SET_AUTOLOCK_PERIOD: {
             const {limitTime} = message;
@@ -471,7 +484,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
                     endTime: Date.now() + limitTime 
                 }
             });
-            return StateManager.set({limitTime: rt.limitTime});
+            await StateManager.set({limitTime: rt.limitTime});
+            break;
         }
         case C.FMSG_LOCK_PROGRESS_STATE:
         case C.FMSG_TRANSFER_PROGRESS:{
@@ -488,7 +502,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const accountAddr = 'k:' + state.keypairHex.publicKey;
             state.accountDetails = await getAccountDetails(accountAddr, state.networkId, state.tokenAddress);
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_GET_FUNGIBLE_V2_TOKEN_LIST:{
             let {networkId, tokenAddress} = message;
@@ -499,7 +514,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             if(!tokenAddressList.includes(tokenAddress)){
                 rt.tokenAddress = 'coin';
             }
-            return StateManager.set(rt);
+            await StateManager.set(rt);
+            break;
         }
         case C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST:{
             let {networkId} = await StateManager.get('networkId');
@@ -511,7 +527,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const {isDark} = message;
             let state = {};
             state = await setUserOptions({isDark});
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_CHANGE_ACCOUNT_OWNERSHIP:{
             await setLoading(true);
@@ -530,7 +547,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const state = {};
             state.rotateData = {opened: false, pred: "", keys: [], initial: {}};
             state.isLoading = {opened: false, text: null};
-            return StateManager.set(state);
+            await StateManager.set(state);
+            break;
         }
         case C.MSG_REQ_USERDATA_FROM_WEBPAGE:{
             // sender: {
@@ -588,6 +606,8 @@ chrome.runtime.onInstalled.addListener(async()=>{
         }
         
     }
+
+    return sendResponse(true);
 }
 
 
