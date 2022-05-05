@@ -11,8 +11,8 @@ import {isValidKey} from "../../background/utils";
 import {RippleButton} from "./special-buttons";
 
 import {
-    vGlobalErrorDataX, vConfirmDataX, vDeleteDataX, vRecentReqkeysData,
-    vRotateDataX, vGetPublickeyListOptionX2, vVisibleReqkeyCountX, vIsLoadingX
+    vGlobalErrorDataX, vConfirmDataX, vDeleteDataX,
+    vRotateDataX, vGetPublickeyListOptionX2, vIsLoadingX
 } from "../atoms.js";
 
 
@@ -501,8 +501,6 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
     const publicKeyListOption = useRecoilValue(vGetPublickeyListOptionX2);
     const [publicKeyListOptionExt, setPublicKeyListOptionExt] = useState([]);
     const [otherPubkeyListOption, setOtherPubkeyListOption] = useState([]);
-    const reqkeysData = useRecoilValue(vRecentReqkeysData);
-    const setVisibleReqkeyCount = useSetRecoilState(vVisibleReqkeyCountX);
     const setLoading = useSetRecoilState(vIsLoadingX);
 
     const close = useCallback(()=>{
@@ -603,7 +601,6 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
                 disabled={!changeAllow(rotateData)} 
                 onClick={()=>{
                     setLoading({opened: true});
-                    setVisibleReqkeyCount(reqkeysData.length);
                     onSubmit({
                         senderAccountName: rotateData.account, 
                         senderChainId: rotateData.chainId, 

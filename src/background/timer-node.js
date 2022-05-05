@@ -79,8 +79,8 @@ export async function AutoLocker(){
     const detectActiveHandle = ()=>{
         if(Date.now() - lastedTime >= 3000){
             lastedTime = Date.now();
-            userOptionsDB.getItem(fieldName).then(({autoLockupTime})=>{
-                const limitTime = autoLockupTime?.limitTime??0;
+            userOptionsDB.getItem(fieldName).then((res)=>{
+                const limitTime = res?.autoLockupTime?.limitTime??0;
                 if(limitTime){
                     userOptionsDB.upsertItem(fieldName, {
                         [fieldName]: {

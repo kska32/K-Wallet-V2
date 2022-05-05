@@ -1,7 +1,7 @@
 /* eslint-disable func-names */
 /* eslint-disable no-unused-vars */
 
-import {keypairsDB, reqkeysDB, accountAddrsDB, userOptionsDB} from "./localdb";
+import {keypairsDB, reqkeysDB, accountNamesDB, userOptionsDB} from "./localdb";
 import C,{BackgroundState} from "./constant";
 import restApi from "./rest.api";
 
@@ -81,10 +81,10 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 }];
 
                 state.senderAddrList = [{ text: accaddr, value: accaddr, key: 1 }];
-                state.receiverAddrList = [{ text: accaddr, value: accaddr, key: 1 }];
+                state.receiverAddrList = [{ text: accaddr, value: accaddr, key: 1, owner: 1}];
 
                 keypairsDB.setItem(publicKey, {enc, selected: true});
-                accountAddrsDB.setItem(accaddr, {owner: true, pubkey: publicKey});
+                accountNamesDB.setItem(accaddr, {owner: true, pubkey: publicKey});
                 state.isLoading = {opened: false, text: null};
                 state.pageNum = 8;
             }else{
@@ -116,7 +116,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                         });
                         const str = JSON.parse(dec);
                         state.password = str[0];
-                        state.isDark = await getUserOptions({isDark: 'false'});
+                        state.isDark = await getUserOptions({isDark: false});
                         state.tokenAddress = await getUserOptions({tokenAddress: 'coin'});
                         const {networkId, keypairList, tokenAddress} = state;
                         state.keypairHex = keypairList[selectedAccIndex];
@@ -150,7 +150,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
             await keypairsDB.getAll().then((res)=>{
                 sendResponse(res.length>0);
             })
-            return true;
+            break;
         }
         case C.MSG_GET_KDA_PRICE:{
             const res = await userOptionsDB.getItem('kda-price');
@@ -251,7 +251,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
         case C.MSG_REMOVE_ACCOUNT: {
             const { removeKey } = message;
             await keypairsDB.deleteByKey(removeKey);
-            await accountAddrsDB.deleteByKey('k:' + removeKey);
+            await accountNamesDB.deleteByKey('k:' + removeKey);
             let state = {};
             state.senderAddrList = await createSenderAddrList();
             state.receiverAddrList = await createReceiverAddrList();
@@ -268,11 +268,11 @@ chrome.runtime.onInstalled.addListener(async()=>{
         }
         case C.MSG_REMOVE_RECEIVER_ACCOUNT_NAME: {
             const {accountName} = message;
-            const target = await accountAddrsDB.getItem(accountName);
+            const target = await accountNamesDB.getItem(accountName);
 
             if(target?.owner === false){
                 let state = {};
-                await accountAddrsDB.deleteByKey(accountName);
+                await accountNamesDB.deleteByKey(accountName);
                 state.receiverAddrList = await createReceiverAddrList();
                 await StateManager.set(state);
             }
@@ -343,7 +343,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
                 ]), state.password);
 
                 await keypairsDB.setItem(publicKey, {enc, selected: false});
-                await accountAddrsDB.setItem('k:' + publicKey, {owner: true, pubkey: publicKey});
+                await accountNamesDB.setItem('k:' + publicKey, {owner: true, pubkey: publicKey});
                 state.senderAddrList = await createSenderAddrList();
                 state.receiverAddrList = await createReceiverAddrList();
                 state.keypairList = await createKeypairList();
@@ -356,10 +356,10 @@ chrome.runtime.onInstalled.addListener(async()=>{
             }
         }
         case C.MSG_LOCK_UP: {
-            await StateManager.set({pageNum: 5});
-            let state = await StateManager.get();
-            state = {...deepCopy(BackgroundState), networkId: state.networkId};
-            await StateManager.set(state);
+            const cst = ['networkId', 'tokenAddress', 'tokenAddressList', 'isDark'];
+            const rt = await StateManager.get(cst);
+            const resetState = {...deepCopy(BackgroundState), ...rt, pageNum: 5};
+            await StateManager.set(resetState);
             break;
         }
         case C.MSG_GET_ACCOUNT_DETAILS: {
@@ -384,7 +384,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
         }
         case C.MSG_UPSERT_A_RECEIVER_ADDR: {
             let {receiverAccountName} = message;
-            await accountAddrsDB.upsertItem(receiverAccountName, {
+            await accountNamesDB.upsertItem(receiverAccountName, {
                 pubkey: receiverAccountName.split(':')[1], 
                 owner: false
             });
@@ -402,7 +402,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
             const enc = aesEncrypt(JSON.stringify([sha512pwd,publicKey,secretKey]), sha512pwd);
 
             await keypairsDB.setItem(publicKey, {enc}),
-            await accountAddrsDB.setItem('k:' + publicKey, {owner: true, pubkey: publicKey});
+            await accountNamesDB.setItem('k:' + publicKey, {owner: true, pubkey: publicKey});
 
             state = {};
             state.keypairList = await createKeypairList();
@@ -649,7 +649,7 @@ async function createSenderAddrList(){
 }
 
 async function createReceiverAddrList(){
-    const aas = await accountAddrsDB.getAll();
+    const aas = await accountNamesDB.getAll();
     return aas?.map((v,i)=>({
         text: v.key, 
         value: v.key, 

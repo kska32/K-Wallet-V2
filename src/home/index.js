@@ -2,7 +2,8 @@ import React,{Suspense, useState, useCallback, useLayoutEffect, useEffect} from 
 import {RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import {
     vPageNumX, vPasswordX, vHasAccount, vIsLoadingX,  
-    vGlobalErrorDataX, vReceiverAddrListX, vState, vRecentReqkeysData
+    vGlobalErrorDataX, vReceiverAddrListX, vState, 
+    vRecentReqkeysDataX
 } from "./atoms.js";
 
 import C from "../background/constant";
@@ -144,7 +145,7 @@ export const Main = React.memo((props)=>{
     const [isLoading,setLoading] = useRecoilState(vIsLoadingX);
     const setGErrData = useSetRecoilState(vGlobalErrorDataX);
     const setReceiverAddrList = useSetRecoilState(vReceiverAddrListX);
-    const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysData);
+    const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysDataX);
 
     useEffect(()=>{
         InitTimerNode();

@@ -80,7 +80,7 @@ function createStore(collection){
 
 export const keypairsDB = createStore('keypairs');
 export const reqkeysDB = createStore("request-keys");
-export const accountAddrsDB = createStore("account-addresses");
+export const accountNamesDB = createStore("account-names");
 export const userOptionsDB = createStore("user-options");
 
 export const senderReqkeyAlarmDB = createStore("sender-reqkey-adb");

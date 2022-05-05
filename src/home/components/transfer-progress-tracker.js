@@ -646,7 +646,7 @@ export default React.memo(({visible})=>{
                                 </span>
                             </div>
                             <div className={txType}>
-                                {txType === C.TX_SAME_TRANSFER || txType === C.TX_CROSS_TRANSFER &&
+                                {(txType === C.TX_SAME_TRANSFER || txType === C.TX_CROSS_TRANSFER) &&
                                     <>
                                         <span>Fr: {senderAccountName.slice(0,12)} - #{senderChainId}</span>
                                         <span>To: {receiverAccountName?.slice(0,12)??senderAccountName.slice(0,12)} - #{receiverChainId??senderChainId}</span>

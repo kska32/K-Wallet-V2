@@ -58,7 +58,6 @@ export const tLastOnePageOpened = atom({
 
 //========================== Selector ==============================
 
-
 export const vStateX = selector({
     key: 'vStateX',
     get: ({get}) => get(vState),
@@ -105,6 +104,7 @@ export const vRecentReqkeysDataX = selector({
     get: ({get}) => get(vRecentReqkeysData),
     set: ({get,set}, newValue) => {
         set(vRecentReqkeysData, [...newValue]);
+        set(vVisibleReqkeyCountX, newValue?.length??0);
     }
 });
 

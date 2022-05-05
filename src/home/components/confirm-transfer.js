@@ -3,8 +3,7 @@ import styled from "styled-components";
 import produce from "immer";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import {
-    vNetworkIdX, vTokenAddressX, vRecentReqkeysData, 
-    vVisibleReqkeyCountX, vIsLoadingX
+    vNetworkIdX, vTokenAddressX, vRecentReqkeysDataX, vIsLoadingX
 } from '../atoms';
 import Button from '@material-ui/core/Button';
 import C from "../../background/constant";
@@ -110,15 +109,13 @@ const Wrapper = styled.div`
 
 
 export default function({transferOpt, visible, cancelConfirm}){
-    const reqkeysData = useRecoilValue(vRecentReqkeysData);
+    const reqkeysData = useRecoilValue(vRecentReqkeysDataX);
     const networkId = useRecoilValue(vNetworkIdX);
     const tokenAddress = useRecoilValue(vTokenAddressX);
-    const setVisibleReqkeyCount = useSetRecoilState(vVisibleReqkeyCountX);
     const setLoading = useSetRecoilState(vIsLoadingX);
     
     const TransferConfirm = useCallback(() => {
         setLoading({opened: true});
-        setVisibleReqkeyCount(reqkeysData.length);
         chrome.runtime.sendMessage({
             type: C.MSG_JUST_TRANSFER, 
             transferOpt
