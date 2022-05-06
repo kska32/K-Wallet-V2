@@ -7,7 +7,6 @@ import {
 import createTransfer from "./transaction";
 import * as ccxt from "ccxt";
 import C,{BackgroundState} from "./constant";
-import { SwitchVideo } from "@material-ui/icons";
 const deepCopy = o => JSON.parse(JSON.stringify(o));
 
 async function createTimerNode(infs){

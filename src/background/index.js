@@ -17,7 +17,8 @@ import {
     findTabAndHighlightByUrl,
     sendMessageErrHandle,
     openPopupWindow,
-    dataGeneratorForPopup
+    dataGeneratorForPopup,
+    onceTabsOnRemovedListener
 } from "./utils";
 
 
@@ -356,7 +357,9 @@ chrome.runtime.onInstalled.addListener(async()=>{
             }
         }
         case C.MSG_LOCK_UP: {
-            const cst = ['networkId', 'tokenAddress', 'tokenAddressList', 'isDark'];
+            const cst = [
+                'networkId', 'tokenAddress', 'tokenAddressList', 'isDark'
+            ];
             const rt = await StateManager.get(cst);
             const resetState = {...deepCopy(BackgroundState), ...rt, pageNum: 5};
             await StateManager.set(resetState);
@@ -708,7 +711,7 @@ chrome.storage.onChanged.addListener((changes)=>{
 
 
 chrome.action.onClicked.addListener((activeTab)=>{
-        createNewTab(activeTab);
+    createNewTab();
 });
 
 
@@ -748,7 +751,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
 });
 
 
-const createNewTab = (activeTab) => {
+const createNewTab = () => {
     const homepath = "home/index.html";
     findTabAndHighlightByUrl(`chrome-extension://${chrome.runtime.id}/${homepath}`, (isExist,thetabid)=>{
         if(!isExist){

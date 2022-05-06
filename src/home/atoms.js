@@ -99,16 +99,6 @@ export const vAccAddrX = selector({
     }
 });
 
-export const vRecentReqkeysDataX = selector({
-    key: 'vRecentReqkeysDataX',
-    get: ({get}) => get(vRecentReqkeysData),
-    set: ({get,set}, newValue) => {
-        set(vRecentReqkeysData, [...newValue]);
-        set(vVisibleReqkeyCountX, newValue?.length??0);
-    }
-});
-
-
 const set = ($props,$msg,$atom) => selector(AtomHelper($props,$msg,$atom));
 
 export const vNetworkIdX = set(
@@ -152,8 +142,6 @@ export const vIsLoadingX = set('isLoading');
 export const vTransferOptX = set('transferOpt');
 
 export const vTransferConfirmOpenedX = set('transferConfirmOpened');
-
-export const vVisibleReqkeyCountX = set('visibleReqkeyCount');
 
 export const vErrorDataX = set('errorData');
 

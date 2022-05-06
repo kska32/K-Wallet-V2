@@ -3,7 +3,7 @@ import styled from "styled-components";
 import produce from "immer";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import {
-    vNetworkIdX, vTokenAddressX, vRecentReqkeysDataX, vIsLoadingX
+    vNetworkIdX, vTokenAddressX, vIsLoadingX
 } from '../atoms';
 import Button from '@material-ui/core/Button';
 import C from "../../background/constant";
@@ -109,7 +109,6 @@ const Wrapper = styled.div`
 
 
 export default function({transferOpt, visible, cancelConfirm}){
-    const reqkeysData = useRecoilValue(vRecentReqkeysDataX);
     const networkId = useRecoilValue(vNetworkIdX);
     const tokenAddress = useRecoilValue(vTokenAddressX);
     const setLoading = useSetRecoilState(vIsLoadingX);
@@ -120,7 +119,7 @@ export default function({transferOpt, visible, cancelConfirm}){
             type: C.MSG_JUST_TRANSFER, 
             transferOpt
         });        
-    }, [transferOpt, reqkeysData]);
+    }, [transferOpt]);
 
 
     return <Wrapper visible={visible} className='transfer-confirm'>

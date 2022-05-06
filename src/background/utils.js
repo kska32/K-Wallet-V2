@@ -288,10 +288,10 @@ export function createReqLogger(reqKey, param={}, responds = [], success = false
 
     const ssm = async (k, v) => {
         //save to db and send msg to popup.
-        const {visibleReqkeyCount} = await StateManager.get('visibleReqkeyCount');
+
         await reqkeysDB.upsertItem(reqKey, ret);
         chrome.runtime.sendMessage({
-            type: C.FMSG_TRANSFER_PROGRESS, key: k, value: v, visibleReqkeyCount
+            type: C.FMSG_TRANSFER_PROGRESS, key: k, value: v
         }, sendMessageErrHandle);
         return v;
     }
@@ -365,6 +365,20 @@ export async function SendErrorMessage(behavior, totalstep, err, param = {}){
 
         return descs[errkey] || errkey;
     }
+}
+
+
+export const onceTabsOnRemovedListener = (targetTab, callback) => {
+    const targetTabId = targetTab.id;
+    const targetWindowId = targetTab.windowId;
+
+    const onRemoveHandler = (tabId, {windowId}) => {
+         if(tabId === targetTabId && windowId === targetWindowId){
+            chrome.tabs.onRemoved.removeListener(onRemoveHandler);
+            if(callback) callback();
+         }
+    };
+    chrome.tabs.onRemoved.addListener(onRemoveHandler);
 }
 
 
@@ -506,3 +520,5 @@ export const isValidKAccount = (value)=>{
     if(vc.includes("k:")===false) return false;
     return [...vc.split(':')[1]].every((v,i)=>"0123456789abcdef".includes(v));
 };
+
+

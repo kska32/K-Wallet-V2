@@ -371,7 +371,7 @@ const RotateModalWrapper = styled.div`
     top: 0px;
     width: 100%;
     height: 100%;
-    z-index: 380;
+    z-index: 375;
     background-color: rgba(0,0,0,0.66);
     display: flex;
     justify-content: center;

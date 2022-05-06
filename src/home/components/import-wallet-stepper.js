@@ -224,6 +224,13 @@ const StepperBodyWrapper = styled.div`
             }
         }
     }
+
+    .mnemonic-note{
+        font-size: 10px;
+        color: rgba(0,0,0,0.36) !important;
+        align-items: center !important;
+        white-space: nowrap;
+    }
 `;
 
 const useStyles = makeStyles((theme) => ({
@@ -416,6 +423,9 @@ function StepperBody02({setValid}){
             })}
 
         </TextFieldGroup>
+        <div className='mnemonic-note'>
+            ※ Mnemonics are not compatible with chainweaver.
+        </div>
     </StepperBodyWrapper>
 }
 

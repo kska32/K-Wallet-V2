@@ -3,7 +3,7 @@ import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import styled from "styled-components";
 import C from "../../background/constant";
 import moment from "moment";
-import {vRecentReqkeysDataX, vErrorDataX, vInfoDataX} from "../atoms.js";
+import {vRecentReqkeysData, vErrorDataX, vInfoDataX} from "../atoms.js";
 import {VisibleStyleComp} from "./styled.comp.js";
 import ErrorHandle from "./error-handle";
 import produce from 'immer';
@@ -213,21 +213,6 @@ const StepProgressBarStyle = styled.div`
             0%{ box-shadow: 0px 0px 0px 1px #009688, 0px 0px 0px 2px rgba(255,0,0, 0.66); }
             100%{ box-shadow: 0px 0px 0px 1px #009688, 0px 0px 0px 30px rgba(255,255,255, 0); }
         }
-
-        ${(p)=>{
-            if(p.lastStepErrored === true){
-                return `
-                    /*
-                    &:last-of-type{
-                        background-color:#009688;
-                        &:after{
-                            content: '✗' !important;
-                        }
-                    }
-                    */
-                `
-            }
-        }}
     }
 `;
 
@@ -241,16 +226,10 @@ const interrupted = (d, tp = 1000 * 60 * 3) =>
                             d.tstep > d.step && d.lastError === null;
 
 const itemFilter = (d) => {
-    /*
     if(d.lastError === null) return d;
-    if(d.lastError.includes('pact completed')){
-        return {
-            ...d, lastError: null,
-            step: 5, finished: true,
-            success: true
-        };
+    if((d?.lastError??'').includes('pact completed')){
+        return {...d, lastError: null, step: 5, finished: true, success: true };
     }
-    */
     return d;
 }
 
@@ -262,21 +241,19 @@ const StepProgressBar = React.memo(({item}) => {
     const [reqkey] = useState(data.reqKey);
     const setErrorDataX = useSetRecoilState(vErrorDataX);
     
-    const [lastError, setLastError] = useState(data.lastError+'');
     const lastStepErrored = useMemo(()=>{
-        const isok = (data?.responds?.slice(-1)[0]?.result?.error?.message??'')
-                                            .includes("resumePact: pact completed");
+        const isok = (data?.lastError??'').includes("resumePact: pact completed");
         return data.success === false && data.finished === true && !isok;
     }, [data.success, data.finished]);
 
     useLayoutEffect(()=>{
+        if(item.step > 0 && item.step === item.tstep) return;
         const listenerHandler = (message,sender,sendResponse)=>{
             let {type,key,value} = message;
             switch(type){
                 case C.FMSG_TRANSFER_PROGRESS: {
                     if(reqkey === key){
                         setData(value);
-                        setLastError(value.lastError);
                         setStep(vstep(value));
                     }
                     break;
@@ -296,11 +273,7 @@ const StepProgressBar = React.memo(({item}) => {
     return <StepProgressBarStyle 
                 step={step} 
                 color='#009688' 
-                stepCount={steplen} 
                 progress={Math.min(step / (steplen - 1), 1) * 100} 
-                error={true}
-                lastStepErrored={lastStepErrored}
-                hasLastError={!!lastError}
             >
                 <div></div>
                 {
@@ -344,7 +317,10 @@ const StepProgressBar = React.memo(({item}) => {
                                         }
                                     }/> 
                                 }
-                                { r.length - 1 === i && lastStepErrored === true && <ErrorOutlineOutlinedIcon className="lastStepErrored" /> }
+                                { r.length - 1 === i 
+                                    && lastStepErrored === true 
+                                    && <ErrorOutlineOutlinedIcon className="lastStepErrored" /> 
+                                }
                             </span>
                         }
                     })
@@ -376,9 +352,22 @@ const StepInfosItem = styled.div`
     border-radius: 8px;
     background-color: #fff;
     box-shadow: 0px 1px 5px 3px rgba(0,0,0,0.12);
-    opacity: 1;
     transition: all 0.18s;
     z-index: 1;
+    opacity: 0;
+
+    @keyframes started{
+        0%{
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+        100%{
+            opacity: 1;
+            transform: translateY(0%);
+        }
+    }
+
+    animation: started 0.3s both;
 
     &:nth-last-of-type(2){
         margin-bottom: 88px;
@@ -574,19 +563,34 @@ const LoadMoreMark = ({rootRef, style, visibleCallback, hiddenCallback}) => {
 }
 
 
+const objectify = (arr) => arr.reduce((a,c,i) => { a[c.key] = c; return a; }, {});
+
 export default React.memo(({visible})=>{
-    const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysDataX);
+    const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysData);
     const [hasMore, setHasMore] = useState(true);
     const [infoData, setInfoData] = useRecoilState(vInfoDataX);
     const errorData = useRecoilValue(vErrorDataX);
     const rootRef = useRef();
     const itemRefs = useRef([]);
+    const [txItems, setTxItems] = useState([]);
+    const [uniqueItemsObj, setUniqueItemsObj] = useState({});
+
+    useLayoutEffect(()=>{
+        setTxItems((txs)=>{
+            let x1 = objectify(reqkeysData);
+            let x2 = objectify(txs);
+            let uniqueObj = {...x1,...x2};
+            setUniqueItemsObj(uniqueObj);
+            return Object.values(uniqueObj).sort((a,b)=>b.timestamp - a.timestamp);
+        });
+    }, [reqkeysData]);
+
 
     const onLoadMore = useCallback(()=>{
         if(hasMore){
             chrome.runtime.sendMessage({
                 type: C.MSG_GET_RECENT_REQKEYS_DATA, 
-                limit: reqkeysData.length + 5
+                limit: txItems.length + 5
             }, (res)=>{
                 if(res.length !== reqkeysData.length){
                     setReqkeysData(res);
@@ -595,19 +599,18 @@ export default React.memo(({visible})=>{
                 }
             })
         }
-    },[reqkeysData, hasMore]);
+    },[txItems, hasMore]);
 
     const exploreLink = useCallback((reqKey,networkId)=>{
         const networkName = networkId.indexOf("mainnet") > -1 ? 'mainnet' : 'testnet';
-        return  `https://explorer.chainweb.com/${networkName}/tx/${reqKey}`;
-    },[])
-
+        return `https://explorer.chainweb.com/${networkName}/tx/${reqKey}`;
+    },[]);
 
     return <Transactions visible={visible} className='tx-tracker' >
             <div>
                 <Wrapper>
                 {
-                    reqkeysData.map((v,i,a)=>{
+                    txItems.map((v,i,a)=>{
                         let {
                             senderAccountName, senderChainId, 
                             receiverAccountName, receiverChainId,
@@ -631,7 +634,8 @@ export default React.memo(({visible})=>{
                                                 if(chrome.runtime.lastError){ 
                                                     //
                                                 }else if(res === true){
-                                                    setReqkeysData(produce((s)=>{ s.splice(i,1) }));
+                                                    delete uniqueItemsObj[v.key];
+                                                    setTxItems(Object.values(uniqueItemsObj));
                                                 }
                                             });
                                         }, 180);
@@ -674,7 +678,6 @@ export default React.memo(({visible})=>{
                                     })); 
                                 }} />
                             </div>
-
                         </StepInfosItem>
                     })
                 } 

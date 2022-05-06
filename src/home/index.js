@@ -3,7 +3,7 @@ import {RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState} from 'rec
 import {
     vPageNumX, vPasswordX, vHasAccount, vIsLoadingX,  
     vGlobalErrorDataX, vReceiverAddrListX, vState, 
-    vRecentReqkeysDataX
+    vRecentReqkeysData
 } from "./atoms.js";
 
 import C from "../background/constant";
@@ -145,7 +145,7 @@ export const Main = React.memo((props)=>{
     const [isLoading,setLoading] = useRecoilState(vIsLoadingX);
     const setGErrData = useSetRecoilState(vGlobalErrorDataX);
     const setReceiverAddrList = useSetRecoilState(vReceiverAddrListX);
-    const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysDataX);
+    const setReqkeysData = useSetRecoilState(vRecentReqkeysData);
 
     useEffect(()=>{
         InitTimerNode();
@@ -155,8 +155,7 @@ export const Main = React.memo((props)=>{
 
     useLayoutEffect(()=>{
         chrome.runtime.onMessage.addListener(async (msg,sender,sendResponse)=>{
-            const {type, visibleReqkeyCount} = msg;
-            switch(type){
+            switch(msg.type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
                     delete msg.type;
                     syncBackgroundState((s)=>({...s, ...msg}));
@@ -179,9 +178,9 @@ export const Main = React.memo((props)=>{
                         case 1:{
                             chrome.runtime.sendMessage({
                                 type: C.MSG_GET_RECENT_REQKEYS_DATA, 
-                                limit: visibleReqkeyCount + 1 
-                            }, (res)=>{
-                                setReqkeysData(res);
+                                limit: 1
+                            }, (res) => { 
+                                setReqkeysData(res); 
                             });
                             break;
                         }
@@ -216,6 +215,7 @@ export const Main = React.memo((props)=>{
             ...arguments[0]
         });
     }, []);
+
 
     return <Wrapper>
         {pageNum === 0 && <CreateWalletInit />}
