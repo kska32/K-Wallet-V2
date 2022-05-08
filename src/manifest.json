@@ -5,7 +5,7 @@
   "author": "kska32@gmail.com",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "2.0.3",
+  "version": "2.0.6",
   "permissions": [
     "storage",
     "unlimitedStorage",
