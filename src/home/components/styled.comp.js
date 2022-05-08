@@ -8,7 +8,6 @@ export const VisibleStyleComp = styled.div`
     pointer-events: none;
     max-width: 366px;
     max-height: 600px;
-    border-radius: 10px;
     overflow: hidden;
     margin: 20px;
     box-shadow: 2px 2px 3px 2px rgba(0,0,0,0.2);
