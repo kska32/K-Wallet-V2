@@ -13,7 +13,7 @@ const NodeEnv = process.env.NODE_ENV;
 const isDev = () => (NodeEnv === 'development');
 const isProd = () => (NodeEnv === 'production');
 
-const TitleName = 'K:Wallet V2';
+const TitleName = 'k:wallet';
 
 module.exports = {
     mode: isDev() ? 'development' : 'production',

@@ -351,23 +351,26 @@ const StepInfosItem = styled.div`
     padding: 10px;
     border-radius: 8px;
     background-color: #fff;
-    box-shadow: 0px 1px 5px 3px rgba(0,0,0,0.12);
+    box-shadow: 2px 2px 3px 2px rgba(0,0,0,0.12);
     transition: all 0.18s;
     z-index: 1;
-    opacity: 0;
+    opacity: 1;
 
     @keyframes started{
         0%{
-            opacity: 0;
-            transform: translateY(-100%);
+            margin-top: -100px;
         }
         100%{
-            opacity: 1;
-            transform: translateY(0%);
+            margin-top: 0px;
         }
     }
 
-    animation: started 0.3s both;
+    ${
+        p=>p.played === true && `
+            animation: started 0.3s none;
+        `
+    }
+    
 
     &:nth-last-of-type(2){
         margin-bottom: 88px;
@@ -565,15 +568,18 @@ const LoadMoreMark = ({rootRef, style, visibleCallback, hiddenCallback}) => {
 
 const objectify = (arr) => arr.reduce((a,c,i) => { a[c.key] = c; return a; }, {});
 
+
 export default React.memo(({visible})=>{
     const [reqkeysData, setReqkeysData] = useRecoilState(vRecentReqkeysData);
     const [hasMore, setHasMore] = useState(true);
     const [infoData, setInfoData] = useRecoilState(vInfoDataX);
     const errorData = useRecoilValue(vErrorDataX);
     const rootRef = useRef();
+    const topRef = useRef();
     const itemRefs = useRef([]);
     const [txItems, setTxItems] = useState([]);
     const [uniqueItemsObj, setUniqueItemsObj] = useState({});
+
 
     useLayoutEffect(()=>{
         setTxItems((txs)=>{
@@ -581,7 +587,18 @@ export default React.memo(({visible})=>{
             let x2 = objectify(txs);
             let uniqueObj = {...x1,...x2};
             setUniqueItemsObj(uniqueObj);
-            return Object.values(uniqueObj).sort((a,b)=>b.timestamp - a.timestamp);
+            let rt = Object.values(uniqueObj).sort((a,b)=>b.timestamp - a.timestamp);
+
+            if(rt[0] !== undefined) {
+                if(rt[0]?.key !== txs[0]?.key){
+                    topRef.current.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                    rt[0] = {...rt[0], played: true};
+                }
+            }
+            return rt;
         });
     }, [reqkeysData]);
 
@@ -608,7 +625,7 @@ export default React.memo(({visible})=>{
 
     return <Transactions visible={visible} className='tx-tracker' >
             <div>
-                <Wrapper>
+                <Wrapper ref={topRef}>
                 {
                     txItems.map((v,i,a)=>{
                         let {
@@ -618,7 +635,7 @@ export default React.memo(({visible})=>{
                             keys, pred
                         } = v?.param??{};
 
-                        return <StepInfosItem key={v.key} ref={r=>itemRefs.current[v.key]=r}>
+                        return <StepInfosItem key={v.key} ref={r=>itemRefs.current[v.key]=r} played={v?.played}>
                             <div>
                                 <span className='txType'>{v?.param?.txType}</span>
                                 <span>Rk: {(v?.reqKey??'').slice(0,8)}</span>
@@ -683,7 +700,7 @@ export default React.memo(({visible})=>{
                 } 
                     <LoadMoreMark rootRef={rootRef} visibleCallback={onLoadMore}/>
                 </Wrapper>
-                <NoTransaction visible={reqkeysData.length===0}>
+                <NoTransaction visible={txItems.length===0}>
                     <NewReleasesOutlinedIcon />
                     <div>No Transactions</div>
                 </NoTransaction>
