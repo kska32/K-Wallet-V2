@@ -207,11 +207,11 @@ export const Main = React.memo((props)=>{
         }
     }, [hasAccount, password]);
 
-    const changeOwnershipOnSubmit = useCallback(function({
+    const changeAccountKeysetOnSubmit = useCallback(function({
         senderAccountName, senderChainId, keys, pred
     }){
         chrome.runtime.sendMessage({
-            type: C.MSG_CHANGE_ACCOUNT_OWNERSHIP,
+            type: C.MSG_CHANGE_ACCOUNT_KEYSET,
             ...arguments[0]
         });
     }, []);
@@ -231,7 +231,7 @@ export const Main = React.memo((props)=>{
         <AlertModal />
         <ConfirmModal />
         <DeleteModal />
-        <RotateModal onSubmit={changeOwnershipOnSubmit} />
+        <RotateModal onSubmit={changeAccountKeysetOnSubmit} />
     </Wrapper>
 });
 

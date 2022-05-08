@@ -13,7 +13,7 @@ export function pushNoti(txid, param){
             message = `${sender}...#${senderChainId} ⇨ ${receiver}...#${receiverChainId}\nKDA: ${amount}`; 
             break;
         case C.TX_ROTATE:
-            message = `${sender}...#${senderChainId}: changed ownership ok.`; 
+            message = `${sender}...#${senderChainId}: changed keyset ok.`; 
             break;
     }
 

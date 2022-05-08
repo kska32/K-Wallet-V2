@@ -451,7 +451,7 @@ const RotateModalWrapper = styled.div`
                 }
             }
 
-            button.resetOwnership{
+            button.resetKeyset{
                 width: 100%;
                 border-radius: 4px;
                 margin: 38px 0px 10px 0px;
@@ -473,7 +473,7 @@ const RotateModalWrapper = styled.div`
 
             }
 
-            button.changeOwnership{
+            button.changeAccountKeyset{
                 width: 100%;
                 border-radius: 4px;
                 margin: 0px 0px 28px 0px;
@@ -547,7 +547,7 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
 
     return <RotateModalWrapper visible={rotateData.opened} onClick={close}>
         <div className='core' onClick={e=>e.stopPropagation()}>
-            <h1>Change Ownership</h1>
+            <h1>Change Keyset</h1>
             <div className='accountChainId' title={`${rotateData.account} #${rotateData.chainId}`}>
               - {(rotateData?.account?.slice(0,18)??'') + '... '} #{rotateData.chainId} -
             </div>
@@ -595,9 +595,9 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
                     }));
                 }}
             />
-            <RippleButton className='resetOwnership' onClick={()=>reset(rotateData)}>Reset</RippleButton>
+            <RippleButton className='resetKeyset' onClick={()=>reset(rotateData)}>Reset</RippleButton>
             <RippleButton 
-                className='changeOwnership' 
+                className='changeAccountKeyset' 
                 disabled={!changeAllow(rotateData)} 
                 onClick={()=>{
                     setLoading({opened: true});
@@ -609,7 +609,7 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
                     })
                 }}
             >
-                Change Ownership
+                Change Keyset
             </RippleButton>
         </div>
     </RotateModalWrapper>

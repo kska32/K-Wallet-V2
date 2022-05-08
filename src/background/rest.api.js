@@ -230,7 +230,7 @@ export default function(){
         }
     }
 
-    async function changeOwnership({
+    async function changeAccountKeyset({
         senderAccountName, 
         senderChainId, 
         pred, 
@@ -278,7 +278,7 @@ export default function(){
         justTransfer,
         continueErrorTransfer,
         searchFungibleV2token,
-        changeOwnership
+        changeAccountKeyset
     }
 }
 
