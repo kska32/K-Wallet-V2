@@ -15,19 +15,14 @@ import 'semantic-ui-css/semantic.min.css';
 import "./index.scss";
 
 import {AlertModal, ConfirmModal, DeleteModal, RotateModal} from "./components/special-modals";
-
 import CreateWalletInit from "./components/create-wallet-init.js";
 import CreateWalletUnlock from "./components/wallet-lock-page.js";
 import CreateWalletStepper from "./components/create-wallet-stepper.js";
 import WalletDashboard from "./components/wallet-dashboard.js";
 import ImportWalletStepper from "./components/import-wallet-stepper.js";
-import circlesSvg from "./images/circles.svg";
 import transfer from "../background/transaction";
-
-
+import {LoadingBox} from "./components/loadingBox";
 import InitTimerNode,{KdaPriceTick, AutoLocker} from "../background/timer-node";
-const LOADING_BOX_TIMEOUT = 7 * 1000;
-
 window.transfer = transfer; 
 
 const Wrapper = styled.div`
@@ -39,102 +34,6 @@ const Wrapper = styled.div`
     min-width: 1280px;
     
 `;
-
-const LoadingBoxStyleW = styled.span`
-    position: fixed !important;
-    z-index: 10000;
-    width: 100%;
-    height: 100%;
-    left: 0px;
-    top: 0px;
-    pointer-events: none;
-
-`;
-
-const LoadingBoxStyle = styled.span`
-    position: relative !important;
-    width: 100%;
-    height: 100%;
-    left: 0px;
-    top: 0px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(255,255,255, 0);
-    transition: all 0.24s;
-    flex-flow: column nowrap;
-
-    &:before{
-        content: '';
-        position: relative;
-        width: 128px;
-        height: 128px;
-        background: rgba(0,0,0,0) url(${circlesSvg}) no-repeat center;
-        background-size: 80%;
-        border-radius: 50%;
-        filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, .7));
-        opacity: 0;
-        transition: all 0.24s;
-        transform: scale(0.8);
-    }
-
-    &:after{
-        content: '${p=>p.loadingText || "Loading . . ."}';
-        font-size: 22px;
-        font-weight: bold;
-        opacity: 0;
-        margin-top: 30px;
-        color: rgba(0, 0, 0, 0.4);
-        filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, .7));
-        font-style: oblique;
-        color: white;
-    }
-
-    ${
-        (p)=>{
-            if(p.isLoading===true){
-                return `
-                    background-color: rgba(255,255,255, 0.1);
-                    pointer-events: initial;
-
-                    &:after,
-                    &:before{
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                `;
-            }
-        }
-    }
-`;
-
-export const LoadingBox = ({isLoading, loadingText, timestamp}) => {
-    const [tid,setTid] = useState(0);
-
-    useLayoutEffect(()=>{
-        const fn = ()=>{
-            chrome.storage.local.set({
-                isLoading:{
-                    opened:false, 
-                    text:null, 
-                    timestamp:null
-                }
-            });
-        }
-        if(!!timestamp){
-            setTid((t)=>{
-                clearTimeout(t);
-                return setTimeout(fn, LOADING_BOX_TIMEOUT);
-            });
-        }
-        return ()=>setTid(t=>clearTimeout(t));
-    },[timestamp])
-
-    return <LoadingBoxStyleW>
-        <LoadingBoxStyle isLoading={isLoading} loadingText={loadingText} />
-    </LoadingBoxStyleW>
-}
 
 
 export const Main = React.memo((props)=>{
@@ -224,8 +123,8 @@ export const Main = React.memo((props)=>{
         <WalletDashboard visible={pageNum >= 8} />
         <CreateWalletUnlock visible={pageNum === 5}/>
         <LoadingBox 
-            isLoading={isLoading.opened} 
-            loadingText={isLoading.text} 
+            isLoading={isLoading?.opened} 
+            loadingText={isLoading?.text} 
             timestamp={isLoading?.timestamp??null}
         />
         <AlertModal />

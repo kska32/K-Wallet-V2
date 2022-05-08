@@ -82,6 +82,7 @@ const C = {
     TX_CREATE_ACCOUNT: "create-account",
 
     MARK_HAS_NO_PRIVATEKEY: '###',
+    LOADING_BOX_TIMEOUT: 7 * 1000
 };
 
 

@@ -1,21 +1,19 @@
 import React,{Suspense, useState, useCallback, useLayoutEffect, useEffect} from "react";
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import styled from "styled-components";
 import "./index.scss";
 
 import LockupPage from "../home/components/wallet-lock-page";
 import { sha512 } from '../background/utils';
-import { atom, RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import C from "../background/constant";
 import { MsgidTabidHashState, vPasswordX, vHasAccount, vIsLoadingX, vState } from "../home/atoms.js";
-import { LoadingBox } from "../home/index";
 import { GetAccountAddr } from "./getAccountAddr";
 import { GetSignature } from "./getSignature";
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { AutoLocker } from "../background/timer-node";
-
-
+import {LoadingBox} from "../home/components/loadingBox";
 
 const Nothing = styled.div`
     position: fixed;
@@ -37,7 +35,7 @@ const Nothing = styled.div`
 `;
 
 
-const Main = (props) => {
+const Main = React.memo((props) => {
     const syncBackgroundState = useSetRecoilState(vState);
     const password = useRecoilValue(vPasswordX);
     const [isLoading,setLoading] = useRecoilState(vIsLoadingX);
@@ -90,21 +88,20 @@ const Main = (props) => {
             }[pageType]??<Nothing><ErrorOutlineIcon/></Nothing>
         }
         <LoadingBox 
-            isLoading={isLoading.opened} 
-            loadingText={isLoading.text} 
+            isLoading={isLoading?.opened} 
+            loadingText={isLoading?.text} 
             timestamp={isLoading?.timestamp??null}
         />
     </div>
-}
+});
 
 
-ReactDOM.render(
-    <Suspense fallback={<LoadingBox isLoading={true} />}>
-        <RecoilRoot>
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <RecoilRoot>
+        <Suspense fallback={<LoadingBox isLoading={true} />}>
             <Main />
-        </RecoilRoot>
-    </Suspense>, 
-    document.getElementById('root')
+        </Suspense>
+    </RecoilRoot>
 );
 
 
