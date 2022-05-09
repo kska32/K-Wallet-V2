@@ -184,7 +184,7 @@ export default function({visible, style={}}){
         if(visible !== true) setPass('');
     },[visible])
 
-    return <Wrapper visible={visible} style={style}>
+    return <Wrapper visible={visible} style={style} >
         <WrapperB >
             <KadenaLogoBox />
             <Description>

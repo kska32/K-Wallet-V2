@@ -150,7 +150,7 @@ chrome.runtime.onInstalled.addListener(async()=>{
         case C.MSG_HAS_ACCOUNT: {
             await keypairsDB.getAll().then((res)=>{
                 sendResponse(res.length>0);
-            })
+            });
             break;
         }
         case C.MSG_GET_KDA_PRICE:{

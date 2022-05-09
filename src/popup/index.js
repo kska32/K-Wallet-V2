@@ -14,6 +14,8 @@ import { GetSignature } from "./getSignature";
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { AutoLocker } from "../background/timer-node";
 import {LoadingBox} from "../home/components/loadingBox";
+import BlockIcon from '@material-ui/icons/Block';
+
 
 const Nothing = styled.div`
     position: fixed;
@@ -35,13 +37,57 @@ const Nothing = styled.div`
 `;
 
 
+const HasNoAccountAlertWrapper = styled.div`
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+
+    >div{
+        width: 90%;
+        height: 100px;
+        box-shadow: 5px 5px 0px 0px rgba(255,255,255,0.5);
+        background-color: rgba(255,255,255,0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-flow: column nowrap;
+
+        &:after{
+            content: 'No Account';
+            color: rgba(0,0,0,0.5);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        >svg{
+            font-size: 64px;
+            color: rgba(0,0,0,0.5);
+        }
+
+    }
+`;
+
+const HasNoAccountAlert = ()=>{
+    return <HasNoAccountAlertWrapper>
+        <div>
+            <BlockIcon />
+        </div>
+    </HasNoAccountAlertWrapper>
+}
+
+
 const Main = React.memo((props) => {
     const syncBackgroundState = useSetRecoilState(vState);
     const password = useRecoilValue(vPasswordX);
+    const hasAccount = useRecoilValue(vHasAccount);
     const [isLoading,setLoading] = useRecoilState(vIsLoadingX);
     const [msgTabHahsId, setMsgTabHashId] = useRecoilState(MsgidTabidHashState);
     const [pageType, setPageType] = useState("");
-
 
     useLayoutEffect(() => {
         if(!!password){
@@ -73,25 +119,26 @@ const Main = React.memo((props) => {
         });
     }, []);
 
+
     useLayoutEffect(()=>{
         setPageType(msgTabHahsId.dataType);
-
     }, [msgTabHahsId.dataType]);
 
+
     return <div>
-        <LockupPage visible={!password} style={{zIndex: 100}}/>
+        <LockupPage visible={!password} style={{zIndex: 100}} />
          {
             {
                 'accountName': <GetAccountAddr />,
                 'signature': <GetSignature />
-
             }[pageType]??<Nothing><ErrorOutlineIcon/></Nothing>
         }
         <LoadingBox 
-            isLoading={isLoading?.opened} 
-            loadingText={isLoading?.text} 
+            isLoading={isLoading.opened} 
+            loadingText={isLoading.text} 
             timestamp={isLoading?.timestamp??null}
         />
+        {hasAccount !== true && <HasNoAccountAlert />}
     </div>
 });
 
