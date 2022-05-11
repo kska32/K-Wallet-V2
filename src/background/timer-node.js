@@ -34,7 +34,7 @@ export async function KdaPriceTick(){
 
 export async function AutoLocker(){
     const fieldName = 'autoLockupTime';
-    const defaultLimitTime = 1000 * 60 * 10; //default idle time.
+    const {limitTime: defaultLimitTime} = await StateManager.get('limitTime');
    
     createTimer('AutoLocker', 0, 5, async () => {
         try{
@@ -76,7 +76,7 @@ export async function AutoLocker(){
 
     let lastedTime = 0;
     const detectActiveHandle = ()=>{
-        if(Date.now() - lastedTime >= 3000){
+        if(Date.now() - lastedTime >= 5000){
             lastedTime = Date.now();
             userOptionsDB.getItem(fieldName).then((res)=>{
                 const limitTime = res?.autoLockupTime?.limitTime??0;
@@ -91,7 +91,7 @@ export async function AutoLocker(){
             });
         }
     }
-    ['mousemove','click','mousedown'].map((eventname)=>
+    ['mousemove','click','mousedown','keyup'].map((eventname)=>
             window.addEventListener(eventname, detectActiveHandle));
 
 }

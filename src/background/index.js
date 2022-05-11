@@ -476,7 +476,7 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
             break;
         }
         case C.MSG_GET_AUTOLOCK_PERIOD: {
-            const {limitTime} = await StateManager.get('limitTime');//default limitTime
+            const {limitTime} = await StateManager.get('limitTime');
             const rt = await getUserOptions({
                 autoLockupTime: { limitTime, endTime: Date.now() + limitTime }
             });

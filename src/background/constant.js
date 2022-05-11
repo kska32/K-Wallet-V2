@@ -104,7 +104,7 @@ export const BackgroundState = {
         networkId: 'mainnet01', 
         tokenAddress: 'coin',
         tokenAddressList: ['coin'],
-        limitTime: 1000 * 60 * 15,
+        limitTime: 1000 * 60 * 10,
         pageNum: 0,
 
         isDark: false,
