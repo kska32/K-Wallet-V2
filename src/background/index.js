@@ -31,20 +31,24 @@ chrome.runtime.onInstalled.addListener(async()=>{
     await StateManager.set(state); 
 });
 
- async function MessageListener(message, sender = null, sendResponse = ()=>{}){
+const setLoading = async (s = true) => {
+    return await StateManager.set({
+        isLoading: {
+            opened: s, 
+            timestamp: Date.now()
+        }
+    });
+}
+
+async function MessageListener(message, sender = null, sendResponse = ()=>{}){
     let {type} = message;
-    const setLoading = async (s = true) => {
-        return await StateManager.set({
-            isLoading: {
-                opened: s, 
-                timestamp: Date.now()
-            }
-        });
-    }
    
     switch(type){
         case C.MSG_GET_STATE: {
             let state = await StateManager.get();
+            if(state.networkId === undefined){
+               await StateManager.set(BackgroundState);
+            }
             return sendResponse(state);
         }
         case C.MSG_SET_STATE: {
