@@ -1,5 +1,5 @@
 
-<h1><b>K-Wallet</b></h1>
+<h1><b>K-Wallet-v2</b></h1>
 <h2>Chrome extension, for the kadena blockchain.</h2>
 <p>Manage Tokens And Txs In An Easiest And Most Secure Way.</p><br/>
 
