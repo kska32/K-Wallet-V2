@@ -17,8 +17,7 @@ import {
     findTabAndHighlightByUrl,
     sendMessageErrHandle,
     openPopupWindow,
-    dataGeneratorForPopup,
-    onceTabsOnRemovedListener
+    dataGeneratorForPopup
 } from "./utils";
 
 
