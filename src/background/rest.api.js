@@ -16,7 +16,8 @@ export default function(){
         gasPrice,
         gasLimit,
         networkId,
-        tokenAddress
+        tokenAddress,
+        interfaces
     }){
         let crlogger = null;
         let senderReqkey = null;
@@ -71,16 +72,17 @@ export default function(){
         receiverChainId,
         networkId,
         tokenAddress,
-        gasPrice = 0.00000001,
-        gasLimit = 400,
-        xGasPrice = 0.00000001,
-        xGasLimit = 400
+        gasPrice,
+        gasLimit,
+        xGasPrice,
+        xGasLimit,
+        interfaces
     }){
         let crlogger = null;
         let senderReqkey = null;
 
-        let param = {...arguments[0], xGasPrice, txType: C.TX_CROSS_TRANSFER};
-        let cct = createTransfer({...arguments[0], xGasPrice});
+        let param = {...arguments[0], txType: C.TX_CROSS_TRANSFER};
+        let cct = createTransfer({...arguments[0]});
 
         try{
             let senderDetails = await cct.getAcctDetails(senderAccountName, senderChainId);
@@ -126,7 +128,8 @@ export default function(){
         tokenAddress,
         networkId,
         xGasPrice,
-        xGasLimit
+        xGasLimit,
+        interfaces
     }){
         try{
             const fn = (senderChainId===receiverChainId ? samechainTransfer : crosschainTransfer);
@@ -203,7 +206,7 @@ export default function(){
             finalrt.sort((a, b) => b.moduleNames.length - a.moduleNames.length);
     
             let ee = finalrt.reduce((a,c,i)=>{
-                a.all = [...a.all, ...c.moduleNames]; 
+                a.all = [...new Set([...a.all, ...c.moduleNames])]; 
                 a.intersect = (i === 0 ? c.moduleNames : a.intersect.filter(ax=>c.moduleNames.includes(ax)));
                 a.chainidRanking.push(c.chainId);
                 a.lengthRanking.push(c.moduleNames.length);
@@ -215,14 +218,13 @@ export default function(){
                 lengthRanking: []
             });
     
-            ee.unique = [...new Set(ee.all)];
             let describes = await Promise.all([...ee.intersect]
                 .map((moduleName)=>cct.describeModule(moduleName, ee.chainidRanking.slice(-1)[0]??0)));
-            let x = describes.filter((de) => 
-                (de.data?.interfaces?.length??0) > 0 && de.data?.interfaces.includes("fungible-v2"))
-                .map(v=>v.data.name);
 
-            ee.fungibleV2 = x;
+            ee.fungibleV2 = describes.filter((de) => 
+                (de.data?.interfaces?.length??0) > 0 && de.data?.interfaces.includes("fungible-v2"))
+                .map(({data:{name,interfaces}})=>({name, interfaces}));
+
             return ee;
         }catch(err){
             //console.log("--->error:>", err);

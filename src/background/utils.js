@@ -17,6 +17,7 @@ export const isObject = v => v?.constructor?.name === 'Object';
 export const isArray = v => v?.constructor?.name === 'Array';
 export const isString = v => v?.constructor?.name === 'String';
 export const distinct = arr =>[...new Set(arr)];
+export const objectify = (arr, key='key') => arr.reduce((a,c,i) => { a[c[key]] = c; return a; }, {});
 
 export const aesEncrypt = (plaintext, key) => {
     let ciphertext = CryptoJS.AES

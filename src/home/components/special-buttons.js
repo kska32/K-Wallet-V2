@@ -18,6 +18,7 @@ import qrScanSvg from "../images/qr-scan-icon.svg";
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
+import {isObject, isString} from "../../background/utils";
 
 
 const $CopiesButton = styled.div`
@@ -727,6 +728,8 @@ const NetDropdownWrapper = styled.div`
         }
 `;
 
+
+
 export const NetDropdown = React.memo(({defaultValue, options, onChange, refreshOnClick, ...props}) => {
     const [state, setState] = useState(Math.max(options.findIndex(v=>v.value===defaultValue),0));
     const [opened, setOpened] = useState(false);
@@ -1099,7 +1102,6 @@ const AutoLockerSetterStyle = styled.span`
 `;
 
 export const AutoLockerSetter = (props) => {
-
 
     return <AutoLockerSetterStyle>
         <input type='number' defaultValue={15} min="1" max="180" maxLength="3" />

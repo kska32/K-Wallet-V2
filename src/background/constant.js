@@ -1,4 +1,6 @@
 
+import { objectify } from "./utils";
+
 const C = {
     MAX_GAS_PRICE: 1e-5,
     MIN_GAS_PRICE: 1e-8,
@@ -85,25 +87,27 @@ const C = {
     LOADING_BOX_TIMEOUT: 7 * 1000
 };
 
+const defaultDetails = Array(20).fill(0)
+    .map((v,i)=>({
+        account: null, balance: 0,
+        chainId: i, guard: null, 
+        success: 1
+    }));
 
+const defaultTokenListZero = { 
+    name:'coin', 
+    interfaces: ['fungible-xchain-v1', 'fungible-v2'] 
+};
 
-const defaultDetails = Array(20)
-    .fill(0)
-    .map(
-        (v,i)=>({
-            account: null, 
-            balance: 0, 
-            chainId: i, 
-            guard: null, 
-            success: 1
-        })
-    );
-
+export const defaultTokenAddressList = {
+    arr: [defaultTokenListZero],
+    obj: objectify([defaultTokenListZero], 'name')
+};
 
 export const BackgroundState = {
         networkId: 'mainnet01', 
         tokenAddress: 'coin',
-        tokenAddressList: ['coin'],
+        tokenAddressList: defaultTokenAddressList,
         limitTime: 1000 * 60 * 10,
         pageNum: 0,
 

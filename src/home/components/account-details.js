@@ -104,7 +104,7 @@ const AccountDetailsWrapper = styled(VisibleStyleComp)`
 
                 }
                 &:nth-of-type(4){
-
+                    
                 }
             }
 
@@ -364,6 +364,7 @@ const AccountDetailsWrapperB = styled.section`
                         cursor: pointer;
                     }
                     &:nth-of-type(4){
+
                     }
                 }
             }

@@ -2,6 +2,7 @@ import React, {useState, useMemo, useLayoutEffect, useCallback, useRef} from "re
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import styled from "styled-components";
 import C from "../../background/constant";
+import {objectify} from "../../background/utils";
 import moment from "moment";
 import {vRecentReqkeysData, vErrorDataX, vInfoDataX} from "../atoms.js";
 import {VisibleStyleComp} from "./styled.comp.js";
@@ -14,6 +15,7 @@ import MoreOutlinedIcon from '@material-ui/icons/MoreOutlined';
 import ExploreOutlinedIcon from '@material-ui/icons/ExploreOutlined';
 import TransactionInfo from './transaction-info';
 import CloseSharpIcon from '@material-ui/icons/CloseSharp';
+
 
 const Transactions = styled(VisibleStyleComp)`
     position: relative;
@@ -564,9 +566,6 @@ const LoadMoreMark = ({rootRef, style, visibleCallback, hiddenCallback}) => {
         ...style
     }}/>
 }
-
-
-const objectify = (arr) => arr.reduce((a,c,i) => { a[c.key] = c; return a; }, {});
 
 
 export default React.memo(({visible})=>{

@@ -8,6 +8,7 @@ const chalk = require('chalk');
 const editJsonFile = require("edit-json-file");
 const ChromeExtensionReloader  = require('webpack-chrome-extension-reloader');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+const { camelCase } = require('lodash');
 
 const NodeEnv = process.env.NODE_ENV;
 const isDev = () => (NodeEnv === 'development');
@@ -15,10 +16,10 @@ const isProd = () => (NodeEnv === 'production');
 
 const TitleName = 'k:wallet';
 
-module.exports = {
-    mode: isDev() ? 'development' : 'production',
-    devtool: isDev() ? 'nosources-source-map' : false,
-    watch: isDev(),
+const cc = {
+    mode: 'development',
+    devtool: 'nosources-source-map' ,
+    watch: true,
     stats: {
         all: false,
         modules: true,
@@ -32,6 +33,10 @@ module.exports = {
         home: './src/home/index.js',
         popup: './src/popup/index.js',
         scripting: './src/scripting/index.js'
+    },
+    output: {
+        filename: t => t.chunk.name + '/index.js',
+        path: path.resolve(__dirname, 'dist')
     },
     plugins: [
         new CleanWebpackPlugin(),
@@ -53,22 +58,8 @@ module.exports = {
             chunks: ['popup'],
             filename: 'popup/index.html',
             template: 'src/home/index.html'
-        }),
-        isDev() ? ()=>new ChromeExtensionReloader({
-                port: 9090,
-                reloadPage: true, 
-                entries: { 
-                    home: 'home',
-                    popup: 'popup',
-                    background: 'background',
-                    scripting: 'scripting'
-                }
-        }) : ()=>new NothingPlugin()
+        })
     ],
-    output: {
-        filename: t => t.chunk.name + '/index.js',
-        path: path.resolve(__dirname, 'dist')
-    },
     module: {
         rules: [
             {
@@ -81,7 +72,7 @@ module.exports = {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
                 use: {
-                  loader: "babel-loader"
+                    loader: "babel-loader"
                 }
             },
             {
@@ -111,9 +102,23 @@ module.exports = {
     }
 };
 
-
-function NothingPlugin() {
-    this.apply = function(){};
+if(isDev() === false){
+    //production
+    delete cc['devtool'];
+    cc['mode'] = 'production';
+    cc['watch'] = false;
+}else{
+    //development
+    cc['plugins'].push(()=>new ChromeExtensionReloader({
+        port: 9090,
+        reloadPage: true, 
+        entries: { 
+            home: 'home',
+            popup: 'popup',
+            background: 'background',
+            scripting: 'scripting'
+        }
+    }));
 }
 
 function CopyFilesOnWatch(options) {
@@ -136,3 +141,6 @@ function CopyFilesOnWatch(options) {
     };
 }
 
+
+
+module.exports = cc;

@@ -15,7 +15,8 @@ export default function({
     xGasPrice = 0.00000001,
     xGasLimit = 400,
     ttl = 28800,
-    tokenAddress = 'coin'
+    tokenAddress = 'coin',
+    interfaces = []
 }){
     const KeysetName = 'kw';
     const hostAddrCp = ((networkId="") => {
@@ -97,12 +98,12 @@ export default function({
                     networkId: networkId,
 
                     keyPairs: mkClistKeypairs(keypairs, [
-                            (tokenAddress === 'coin' ? 
-                                {
+                            (interfaces.includes('fungible-xchain-v1')
+                                ? {
                                     name: `${tokenAddress}.TRANSFER_XCHAIN`,
                                     args: [senderAccountName, receiverAccountName, Number(formatAmount(amount)), receiverChainId]
-                                } : 
-                                {
+                                }  
+                                : {
                                     name: `${tokenAddress}.DEBIT`, 
                                     args: [senderAccountName]
                                 }

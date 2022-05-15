@@ -316,7 +316,7 @@ export default function({visible}){
             networkId,
             tokenAddress
         });
-    },[networkId,tokenAddress]);
+    },[networkId, tokenAddress]);
 
     const onNetworkChange = useCallback((v)=>{
         setNetworkId(v);
@@ -338,7 +338,7 @@ export default function({visible}){
         let t = document.querySelector('#root');
         t.classList[isDark ? 'add' : 'remove']('dark');
     }, [isDark]);
-
+    
     return <Wrapper visible={visible} >
         <Body className='xBody'>
             <Navbar className='xNavbar'>
@@ -361,7 +361,7 @@ export default function({visible}){
                         />
                     </span>
                     <span>
-                        <NetDropdown options={tokenAddressList.map((c,i)=>({key: i, text:c, value:c}))}
+                        <NetDropdown options={tokenAddressList?.arr?.map((v,i)=>({key: i, text:v.name, value:v.name}))??[]}
                             key={tokenAddress}
                             defaultValue={tokenAddress}
                             style={{minWidth:'136px'}}

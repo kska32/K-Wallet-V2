@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 
 import {keypairsDB, reqkeysDB, accountNamesDB, userOptionsDB} from "./localdb";
-import C,{BackgroundState} from "./constant";
+import C, {BackgroundState, defaultTokenAddressList} from "./constant";
 import restApi from "./rest.api";
 
 import {
@@ -17,7 +17,8 @@ import {
     findTabAndHighlightByUrl,
     sendMessageErrHandle,
     openPopupWindow,
-    dataGeneratorForPopup
+    dataGeneratorForPopup,
+    objectify
 } from "./utils";
 
 
@@ -41,7 +42,7 @@ const setLoading = async (s = true) => {
 
 async function MessageListener(message, sender = null, sendResponse = ()=>{}){
     let {type} = message;
-   
+    
     switch(type){
         case C.MSG_GET_STATE: {
             let state = await StateManager.get();
@@ -126,7 +127,9 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
                         state.keypairHex = keypairList[selectedAccIndex];
                         const accaddr = 'k:' + keypairList[selectedAccIndex].publicKey;
                         state.transferOpt.senderAccountName = accaddr;
-                        state.tokenAddressList = await getUserOptions({[`tokenAddressList+${networkId}`]: ['coin']});
+                        state.tokenAddressList = await getUserOptions({
+                            [`tokenAddressList.${networkId}`]: state.tokenAddressList
+                        });
                         state.senderAddrList = await createSenderAddrList();
                         state.receiverAddrList = await createReceiverAddrList();
                         state.accountDetails = await getAccountDetails(accaddr, networkId, tokenAddress);
@@ -428,7 +431,8 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
                 let transferOption = {
                     ...message.transferOpt, 
                     networkId: state.networkId,
-                    tokenAddress: state.tokenAddress
+                    tokenAddress: state.tokenAddress,
+                    interfaces: state?.tokenAddressList?.obj?.[state.tokenAddress]?.interfaces
                 };
                 await Transfer.justTransfer(transferOption);
                 await StateManager.set({isLoading: {opened: false}});
@@ -513,20 +517,26 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
         }
         case C.MSG_GET_FUNGIBLE_V2_TOKEN_LIST:{
             let {networkId, tokenAddress} = message;
-            const tokenAddressList = await getUserOptions({
-                [`tokenAddressList+${networkId}`]: ['coin']
+            let tokenAddressList = await getUserOptions({
+                [`tokenAddressList.${networkId}`]: defaultTokenAddressList
             });
-            let rt = {tokenAddressList};
-            if(!tokenAddressList.includes(tokenAddress)){
+            let rt = {tokenAddressList, tokenAddress};
+            if(tokenAddressList?.['obj']?.[tokenAddress] === undefined){
+                await setUserOptions({tokenAddress: 'coin'});
                 rt.tokenAddress = 'coin';
             }
             await StateManager.set(rt);
             break;
         }
         case C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST:{
-            let {networkId} = await StateManager.get('networkId');
+            let {networkId, tokenAddressList} = await StateManager.get(['networkId','tokenAddressList']);
             let rt = await Transfer.searchFungibleV2token(networkId);
-            await setUserOptions({[`tokenAddressList+${networkId}`]: rt?.fungibleV2??[]});
+            let fungibleV2Lst = (rt?.fungibleV2?.length??0) === 0 ? tokenAddressList.arr : rt.fungibleV2;
+            let lst = {
+                ['arr']: fungibleV2Lst,
+                ['obj']: objectify(fungibleV2Lst, 'name')
+            };
+            await setUserOptions({[`tokenAddressList.${networkId}`]: lst});
             return sendResponse(rt);
         }
         case C.MSG_SET_DARK_MODE:{
@@ -756,8 +766,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
 
 const createNewTab = () => {
     const homepath = "home/index.html";
-    findTabAndHighlightByUrl(`chrome-extension://${chrome.runtime.id}/${homepath}`, (isExist,thetabid)=>{
+    findTabAndHighlightByUrl(`chrome-extension://${chrome.runtime.id}/${homepath}`, async(isExist,thetabid) => {
         if(!isExist){
+            await userOptionsDB.getItem('autoLockupTime').then((res)=>{
+                const endTime = res?.autoLockupTime?.endTime??0;
+                if(endTime !== 0 && endTime < Date.now()){
+                    MessageListener({type: C.MSG_LOCK_UP});
+                }
+            });
             createTabCompletely({url: homepath},(tab)=>{
                 //open or highlighted then ...
             });
