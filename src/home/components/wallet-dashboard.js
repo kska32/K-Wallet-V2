@@ -305,18 +305,10 @@ export default function({visible}){
     const [networkId, setNetworkId] = useRecoilState(vNetworkIdX);
     const [sidebarOpened, setSidebarOpened] = useRecoilState(vSidebarOpenedX);
     const kdausdt = useRecoilValue(vKdaPriceX);
-    const [tokenAddressList, setTokenAddressList] = useRecoilState(vTokenAddressListX);
+    const tokenAddressList = useRecoilValue(vTokenAddressListX);
     const [tokenAddress, setTokenAddress] = useRecoilState(vTokenAddressX);
     const [isDark, setDark] = useRecoilState(vIsDarkX);
     const [lastOnePageOpened, setLastOnePageOpened] = useRecoilState(tLastOnePageOpened);
-
-    useLayoutEffect(()=>{
-        chrome.runtime.sendMessage({
-            type: C.MSG_GET_FUNGIBLE_V2_TOKEN_LIST,
-            networkId,
-            tokenAddress
-        });
-    },[networkId, tokenAddress]);
 
     const onNetworkChange = useCallback((v)=>{
         setNetworkId(v);
@@ -367,10 +359,9 @@ export default function({visible}){
                             style={{minWidth:'136px'}}
                             onChange={onTokenAddressChange}
                             refreshOnClick={async()=>{
-                                const rt = await chrome.runtime.sendMessage({
+                                await chrome.runtime.sendMessage({
                                     type: C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST
                                 });   
-                                setTokenAddressList(rt.fungibleV2);
                             }}
                         />
                     </span>

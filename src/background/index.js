@@ -470,12 +470,44 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
         case C.MSG_CHANGE_NETWORKID: {
             await setLoading(true);
             const {networkId} = message;
-            let state = await StateManager.get();
-            state = await setUserOptions({networkId});
-            const accountAddr = 'k:' + state.keypairHex.publicKey;
-            state.accountDetails = await getAccountDetails(accountAddr, state.networkId, state.tokenAddress);
+            const {keypairHex, tokenAddress} = await StateManager.get(['keypairHex','tokenAddress']);
+            let state = await setUserOptions({networkId});
+
+            state.tokenAddressList = await getUserOptions({
+                [`tokenAddressList.${networkId}`]: defaultTokenAddressList
+            });
+            if(state.tokenAddressList?.['obj']?.[tokenAddress] === undefined){
+                await setUserOptions({tokenAddress: 'coin'});
+                state.tokenAddress = 'coin';
+            }
+
+            const accountAddr = 'k:' + keypairHex.publicKey;
+            state.accountDetails = await getAccountDetails(accountAddr, networkId, state.tokenAddress);
+            state.isLoading = {opened: false, text: null};
+
+            await StateManager.set(state);
+            break;
+        }
+        case C.MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR: {
+            const {tokenAddress} = message;
+            await setLoading(true);
+            let {keypairHex, networkId} = await StateManager.get(['keypairHex', 'networkId']);
+            let state = await setUserOptions({tokenAddress});
+            state.accountDetails = await getAccountDetails('k:'+keypairHex.publicKey, networkId, tokenAddress);
             state.isLoading = {opened: false, text: null};
             await StateManager.set(state);
+            break;
+        }
+        case C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST:{
+            let {networkId, tokenAddressList} = await StateManager.get(['networkId','tokenAddressList']);
+            let rt = await Transfer.searchFungibleV2token(networkId);
+            let fungibleV2Lst = (rt?.fungibleV2?.length??0) === 0 ? tokenAddressList.arr : rt.fungibleV2;
+            let lst = {
+                ['arr']: fungibleV2Lst,
+                ['obj']: objectify(fungibleV2Lst, 'name')
+            };
+            await setUserOptions({[`tokenAddressList.${networkId}`]: lst});
+            await StateManager.set({tokenAddressList: lst});
             break;
         }
         case C.MSG_GET_AUTOLOCK_PERIOD: {
@@ -503,41 +535,6 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
             const { type, key, value } = message;
             chrome.runtime.sendMessage({type, key, value}, sendMessageErrHandle);
             break;
-        }
-        case C.MSG_CHANGE_FUNGIBLE_V2_TOKEN_ADDR: {
-            const {tokenAddress} = message;
-            await setLoading(true);
-            let state = await StateManager.get();
-            state = await setUserOptions({tokenAddress});
-            const accountAddr = 'k:' + state.keypairHex.publicKey;
-            state.accountDetails = await getAccountDetails(accountAddr, state.networkId, state.tokenAddress);
-            state.isLoading = {opened: false, text: null};
-            await StateManager.set(state);
-            break;
-        }
-        case C.MSG_GET_FUNGIBLE_V2_TOKEN_LIST:{
-            let {networkId, tokenAddress} = message;
-            let tokenAddressList = await getUserOptions({
-                [`tokenAddressList.${networkId}`]: defaultTokenAddressList
-            });
-            let rt = {tokenAddressList, tokenAddress};
-            if(tokenAddressList?.['obj']?.[tokenAddress] === undefined){
-                await setUserOptions({tokenAddress: 'coin'});
-                rt.tokenAddress = 'coin';
-            }
-            await StateManager.set(rt);
-            break;
-        }
-        case C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST:{
-            let {networkId, tokenAddressList} = await StateManager.get(['networkId','tokenAddressList']);
-            let rt = await Transfer.searchFungibleV2token(networkId);
-            let fungibleV2Lst = (rt?.fungibleV2?.length??0) === 0 ? tokenAddressList.arr : rt.fungibleV2;
-            let lst = {
-                ['arr']: fungibleV2Lst,
-                ['obj']: objectify(fungibleV2Lst, 'name')
-            };
-            await setUserOptions({[`tokenAddressList.${networkId}`]: lst});
-            return sendResponse(rt);
         }
         case C.MSG_SET_DARK_MODE:{
             const {isDark} = message;
@@ -644,11 +641,10 @@ function setUserOptions(kvo){
     let key = Object.keys(kvo)[0];
     let value = kvo[key];
 
-    return StateManager.get().then((state)=>{
-        return userOptionsDB.setItem(key, {[key]: value}).then(()=>{
-            state[key] = value;
-            return state;
-        });
+    let state = {};
+    return userOptionsDB.setItem(key, {[key]:value}).then(()=>{
+        state[key] = value;
+        return state;
     }).catch((err)=>{
         console.error(`${key}:> `, err);
         return false;
