@@ -2,7 +2,7 @@
 import C from "../background/constant";
 import {CheckTypeSigningCmd} from '../background/utils';
 
-if(!!chrome.runtime.id){
+if(!!chrome?.runtime?.id){
     //ISOLATED WORLD
     window.addEventListener('message', (event)=>{
         if (event.source !== window) return;
