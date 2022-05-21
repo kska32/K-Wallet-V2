@@ -2,7 +2,7 @@ import {createTimer, createReqLogger, StateManager, sendMessageErrHandle} from "
 import {
     senderReqkeyAlarmDB, receiverReqkeyAlarmDB, 
     proofAlarmDB, continueTransferAlarmDB, 
-    userOptionsDB, keypairsDB
+    userOptionsDB
 } from './localdb';
 import createTransfer from "./transaction";
 import * as ccxt from "ccxt";
@@ -66,7 +66,7 @@ export async function AutoLocker(){
                     chrome.runtime.sendMessage({
                         type: C.FMSG_LOCK_PROGRESS_STATE, 
                         value: percent 
-                    },sendMessageErrHandle);
+                    });
                 }
             }
         }catch(err){

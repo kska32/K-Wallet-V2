@@ -11,7 +11,6 @@ import produce from "immer";
 
 import ReactDOM from 'react-dom/client';
 import styled from "styled-components";
-import 'semantic-ui-css/semantic.min.css';
 import "./index.scss";
 
 import {AlertModal, ConfirmModal, DeleteModal, RotateModal} from "./components/special-modals";

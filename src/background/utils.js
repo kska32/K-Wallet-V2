@@ -7,7 +7,6 @@ import C from "./constant";
 import {pushNoti} from "./notification";
 import createTransfer from "./transaction";
 
-
 const toBin = hexstr => new Uint8Array(Buffer.from(hexstr,'hex'));
 const toHex = b => Buffer.from(b).toString('hex');
 export const sha512 = (message) => CryptoJS.SHA512(message).toString(CryptoJS.enc.Base64);
@@ -521,5 +520,3 @@ export const isValidKAccount = (value)=>{
     if(vc.includes("k:")===false) return false;
     return [...vc.split(':')[1]].every((v,i)=>"0123456789abcdef".includes(v));
 };
-
-

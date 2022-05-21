@@ -1,25 +1,19 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const fse = require('fs-extra');
-const chokidar = require('chokidar');
-const moment = require('moment');
-const chalk = require('chalk');
-const editJsonFile = require("edit-json-file");
 const ChromeExtensionReloader  = require('webpack-chrome-extension-reloader');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-const { camelCase } = require('lodash');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-const NodeEnv = process.env.NODE_ENV;
-const isDev = () => (NodeEnv === 'development');
-const isProd = () => (NodeEnv === 'production');
-
+const isDev = process.env.NODE_ENV !== 'production';
 const TitleName = 'k:wallet';
 
-const cc = {
-    mode: 'development',
-    devtool: 'nosources-source-map' ,
-    watch: true,
+module.exports = {
+    mode: isDev ? 'development' : 'production',
+    ...!isDev ? {} : {
+        devtool: 'nosources-source-map'
+    },
+    watch: isDev,
     stats: {
         all: false,
         modules: true,
@@ -35,112 +29,87 @@ const cc = {
         scripting: './src/scripting/index.js'
     },
     output: {
-        filename: t => t.chunk.name + '/index.js',
-        path: path.resolve(__dirname, 'dist')
+        filename: '[name]/index.js',
+        path: path.resolve(__dirname, 'dist'),
+        assetModuleFilename: 'assets/[hash][ext][query]'
     },
     plugins: [
         new CleanWebpackPlugin(),
         new NodePolyfillPlugin(),
-        new CopyFilesOnWatch([
-            {from:'./src/icons/', to:'./dist/icons/'},
-            {from:'./src/manifest.json', to:'./dist/manifest.json'},
-            {from:'./src/_locales/', to:'./dist/_locales/'},
-            {from:'./src/images/', to:'./dist/images/'}
-        ]),
-        new HtmlWebpackPlugin({
-            title: TitleName,
-            chunks: ['home'],
-            filename: 'home/index.html',
-            template: 'src/home/index.html'
+        new CopyWebpackPlugin({
+            patterns: [
+                {from:'./src/icons', to:'icons'},
+                {from:'./src/manifest.json'},
+                {from:'./src/_locales', to:'_locales'},
+            ],
         }),
-        new HtmlWebpackPlugin({
-            title: TitleName,
-            chunks: ['popup'],
-            filename: 'popup/index.html',
-            template: 'src/home/index.html'
-        })
-    ],
+        ...
+        ['home', 'popup'].map(entryName => 
+            new HtmlWebpackPlugin({
+                title: TitleName,
+                chunks: [entryName],
+                filename: `${entryName}/index.html`,
+                template: 'src/home/index.html'
+            })
+        ),
+        isDev && (() => new ChromeExtensionReloader({
+            port: 9090,
+            reloadPage: true, 
+            entries: { 
+                home: 'home',
+                popup: 'popup',
+                background: 'background',
+                scripting: 'scripting'
+            }
+        }))
+    ].filter(Boolean),
     module: {
         rules: [
             {
                 enforce: 'pre',
-                test: /\.(js|jsx)$/,
+                test: /\.(js|jsx)$/i,
                 exclude: /node_modules/,
                 loader: 'eslint-loader',
             },
             {
-                test: /\.(js|jsx)$/,
+                test: /\.(js|jsx)$/i,
                 exclude: /node_modules/,
-                use: {
-                    loader: "babel-loader"
+                loader: 'babel-loader',
+                options: {
+                    presets: [
+                      ['@babel/preset-env', { targets: "defaults" }],
+                      ['@babel/preset-react']
+                    ],
+                    plugins: [
+                        '@babel/plugin-transform-runtime'
+                    ]
                 }
             },
             {
-                test: /\.css$/,
+                test: /\.(sa|sc|c)ss$/i,
                 use: [
-                    'style-loader',
-                    'css-loader'
-                ]
-            },
-            {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    'style-loader',
-                    'css-loader',
-                    'sass-loader',
+                    {
+                        loader: 'style-loader'
+                    },
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            url: {
+                                filter: (url, resourcePath) => {
+                                    return !url.startsWith('data:application/x-font-ttf');
+                                }
+                            },
+                        } 
+                    },
+                    {
+                        loader: 'sass-loader'
+                    }
                 ],
             },
             {
-                test: /\.(png|svg|jpg|gif|woff|woff2|eot|ttf|otf)$/,
-                loader: 'file-loader',
-                options:{
-                   outputPath: 'home',
-                   publicPath: '/home'
-                }
+                test: /\.(png|svg|jpg|gif|woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset'
             }
         ]
     }
 };
-
-if(isDev() === false){
-    //production
-    delete cc['devtool'];
-    cc['mode'] = 'production';
-    cc['watch'] = false;
-}else{
-    //development
-    cc['plugins'].push(()=>new ChromeExtensionReloader({
-        port: 9090,
-        reloadPage: true, 
-        entries: { 
-            home: 'home',
-            popup: 'popup',
-            background: 'background',
-            scripting: 'scripting'
-        }
-    }));
-}
-
-function CopyFilesOnWatch(options) {
-    this.apply = function(compiler){
-        if(isDev()){
-            options.forEach((v)=>{
-                chokidar.watch(v.from).on('change',(path)=>{
-                    console.log( chalk.red("Changed:"), chalk.green(path), chalk.yellow(moment().format('LTS')) );
-                    fse.copy(path, path.replace('src','dist'));
-                });
-            });
-        }
-        compiler.hooks.emit.tapAsync('CopyFilesOnWatch', (compilation, callback) => {
-            Promise.all(options.map(v=>fse.copy(v.from,v.to))).then(()=>{
-                callback();
-            }).catch((err)=>{
-                console.error(err);
-            })
-        });
-    };
-}
-
-
-
-module.exports = cc;

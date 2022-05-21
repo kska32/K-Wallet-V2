@@ -115,6 +115,8 @@
         "no-constant-condition": 0,
         "no-useless-catch": 1,
         "no-fallthrough": 1,
-        "no-useless-escape": 1
+        "no-useless-escape": 1,
+        "no-global-assign": 1,
+        "no-undef": 1
     }
 }

@@ -62,7 +62,7 @@ const Wrapper = styled.section`
 
         max-width: 560px;
         max-height: 320px;
-        border-radius: 20px;
+        border-radius: 10px;
         padding: 30px;
 
         box-shadow: 3px 3px 10px 6px rgba(0,0,0,0.2);
@@ -125,7 +125,8 @@ const Wrapper = styled.section`
                         border-radius: 50%;
                         padding: 5px;
                         cursor: pointer;
-                        box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.12);
+                        box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.36);
+                        margin-right: 8px;
                     }
 
                     a{

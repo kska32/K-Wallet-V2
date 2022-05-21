@@ -21,7 +21,6 @@ import {
     objectify
 } from "./utils";
 
-
 const Transfer = restApi();
 const deepCopy = o => JSON.parse(JSON.stringify(o));
 

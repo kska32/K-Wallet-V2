@@ -48,7 +48,7 @@ if(!!chrome?.runtime?.id){
     );
 
     const get = ({dataType = '', dataParam = null}) => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const messageId = randomUID();
             window.postMessage({
                 type: C.MSG_OPEN_POPUP_WINDOW, 
