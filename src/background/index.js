@@ -696,7 +696,7 @@ async function getAccountDetails(accountId, networkId, tokenAddress){
 }
 
 
-chrome.runtime.onMessage.addListener(function(msg,sender,sendResponse){
+chrome.runtime.onMessage.addListener((msg,sender,sendResponse) => {
     //console.log("message.type:", msg.type, ", message.content:", msg);
     MessageListener(msg, sender, sendResponse).catch((err)=>{
         //console.error("MessageListener - Error: ", err);

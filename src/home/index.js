@@ -52,7 +52,7 @@ export const Main = React.memo((props)=>{
     },[]);
 
     useLayoutEffect(()=>{
-        chrome.runtime.onMessage.addListener(async (msg,sender,sendResponse)=>{
+        chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
             switch(msg.type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
                     delete msg.type;
