@@ -1,3 +1,4 @@
+import $browser from "../background/web.ext.api";
 import React,{useCallback} from "react";
 import {useRecoilValue} from 'recoil';
 import {MsgidTabidHashState} from "../home/atoms.js";
@@ -38,15 +39,15 @@ function ObjectShow(obj){
     </div>
 }
 
-export const GetSignature = (props) => {
+export const GetSignature = () => {
     const {
         origin, messageId, tabId, hash, 
         dataType, dataParam
     } = useRecoilValue(MsgidTabidHashState);
 
-    const clickHandle = useCallback((e)=>{
+    const clickHandle = useCallback(()=>{
         if(!!hash){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_REQ_USERDATA_FROM_WEBPAGE,
                 tabId,
                 messageId, 

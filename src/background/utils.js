@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+import $browser from "./web.ext.api";
 import CryptoJS from "crypto-js";
 import nacl from "tweetnacl";
 import {Buffer} from "buffer";
@@ -76,17 +77,12 @@ export const boxDecrypt = (encMsg, password) => {
     return text;
 }
 
-export const sendMessageErrHandle = (res)=>{
-    if(chrome.runtime.lastError){
-        //console.log(chrome.runtime.lastError.message);
-    }
-}
 
 export const StateManager = (()=>{
     return {
-        get: (k) => chrome.storage.local.get(k),
-        set: (v) => chrome.storage.local.set(v),
-        clear: () => chrome.storage.local.clear()
+        get: (k) => $browser.storage.local.get(k),
+        set: (v) => $browser.storage.local.set(v),
+        clear: () => $browser.storage.local.clear()
     }
 })();
 
@@ -175,22 +171,26 @@ export const hasRelativeKeypairs = async (publicKeys) => {
 
 
 export function createTabCompletely(createOptions,callback){
-    chrome.tabs.create(createOptions,(tab)=>{
+    $browser.tabs.create(createOptions).then((tab)=>{
         let tidx = setInterval(()=>{
-            chrome.tabs.get(tab.id,(tabx)=>{
+            $browser.tabs.get(tab.id).then((tabx)=>{
                 if(tabx.status==='complete'){
                     clearInterval(tidx);
                     if(callback){
                         callback(tab);
                     }
                 }
+            }).catch((err)=>{
+                console.error(err);
             });
         });
+    }).catch((err)=>{
+        console.error(err);
     });
 }
 
-export function findTabAndHighlightByUrl(url,callback){
-    chrome.tabs.query({}, (tabs)=>{
+export function findTabAndHighlightByUrl(url){
+    return $browser.tabs.query({}).then((tabs)=>{
         let finded = false;
         let tabid = null;
 
@@ -207,34 +207,31 @@ export function findTabAndHighlightByUrl(url,callback){
                 }
         }
         if(finded){
-            chrome.tabs.highlight({tabs:tabix, windowId},(window)=>{
-                if(chrome.runtime.lastError){}
-                chrome.windows.update(windowId, {
+            return $browser.tabs.highlight({tabs:tabix, windowId}).then((window)=>{
+                return $browser.windows.update(windowId, {
                     drawAttention: true, 
                     focused: true,
                     state: 'maximized'
+                }).then(()=>{
+                    return [true, tabid];
                 });
-                if(callback){
-                    callback(true,tabid);
-                }
             });
-            
         }else{
-            if(callback){
-                callback(false,null);
-            }
+            return [false, null];
         }
-    });
+    })
 }
 
 export function sendMsgToTabs(queryInfo,message,callback){
-    chrome.tabs.query(queryInfo,(tabs)=>{
+    $browser.tabs.query(queryInfo).then((tabs)=>{
         tabs.forEach((tab)=>{
-            chrome.tabs.sendMessage(tab.id, message, (res)=>{
-                if(chrome.runtime.lastError){}
+            $browser.tabs.sendMessage(tab.id, message).then((res)=>{
+                if($browser.runtime.lastError){}
                 if(callback) callback(res,tab);
-            });
+            }).catch((err)=>console.error(err));
         });
+    }).catch((err)=>{
+        console.error(err);
     });
 }
 
@@ -244,18 +241,6 @@ export function normalizeUTF8(str){
     }catch(err){
         return str;
     }
-}
-
-export function runtimeSendMessage(message){
-    return new Promise((resolve,reject)=>{
-        chrome.runtime.sendMessage(message, (res)=>{
-            if(!chrome.runtime.lastError){
-                resolve(res)
-            }else{
-                reject(res.runtime.lastError);
-            }
-        });
-    });
 }
 
 export function delay(t=1000, ret=true){
@@ -290,9 +275,11 @@ export function createReqLogger(reqKey, param={}, responds = [], success = false
         //save to db and send msg to popup.
 
         await reqkeysDB.upsertItem(reqKey, ret);
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.FMSG_TRANSFER_PROGRESS, key: k, value: v
-        }, sendMessageErrHandle);
+        }).catch((err)=>{
+            //...
+        });
         return v;
     }
     
@@ -331,7 +318,7 @@ export function createReqLogger(reqKey, param={}, responds = [], success = false
 }
 
 export async function SendErrorMessage(behavior, totalstep, err, param = {}){
-    chrome.runtime.sendMessage({
+    $browser.runtime.sendMessage({
         type: C.FMSG_TRANSFER_PROGRESS, 
         key: null, 
         value: {
@@ -339,7 +326,9 @@ export async function SendErrorMessage(behavior, totalstep, err, param = {}){
             step: 0, tstep: totalstep, param, responds: [], 
             success: false, finished: false, lastError: ErrorDescription(err)
         }
-    },sendMessageErrHandle);
+    }).catch((err)=>{
+        //...
+    });
 
     function ErrorDescription(err){
         let errkey = '';
@@ -374,11 +363,11 @@ export const onceTabsOnRemovedListener = (targetTab, callback) => {
 
     const onRemoveHandler = (tabId, {windowId}) => {
          if(tabId === targetTabId && windowId === targetWindowId){
-            chrome.tabs.onRemoved.removeListener(onRemoveHandler);
+            $browser.tabs.onRemoved.removeListener(onRemoveHandler);
             if(callback) callback();
          }
     };
-    chrome.tabs.onRemoved.addListener(onRemoveHandler);
+    $browser.tabs.onRemoved.addListener(onRemoveHandler);
 }
 
 
@@ -394,24 +383,24 @@ export const openPopupWindow = ({
 }) => {
 
     const generateURL = () => {
-        let path = `chrome-extension://${chrome.runtime.id}/${relativeURL}`;
+        let path = `chrome-extension://${$browser.runtime.id}/${relativeURL}`;
         let search1 = `?tabId=${sender.tab.id}&messageId=${messageId}&origin=${sender.origin}`;
         let search2 = `&dataType=${dataType}&dataParam=${btoa(JSON.stringify(dataParam))}`;
         return path + search1 + search2;
     }
 
-    chrome.windows.create({
+    return $browser.windows.create({
         focused: true,
         url: generateURL(),
         type: 'popup',
         width, height,
         left, top,
         tabId: sender.tab.id
-    }, (popupWindow) => {
+    }).then((popupWindow) => {
         const onRemove = async (windowId)=>{
             if(windowId === popupWindow.id){
                 try{
-                    await chrome.tabs.sendMessage(
+                    await $browser.tabs.sendMessage(
                         sender.tab.id,
                         {
                             type: OPEN_POPUP_WINDOW_RESPONSE,
@@ -421,15 +410,15 @@ export const openPopupWindow = ({
                             data: onCloseData
                         }
                     );
-                    chrome.windows.onRemoved.removeListener(onRemove);
-                    await chrome.windows.remove(windowId);
+                    $browser.windows.onRemoved.removeListener(onRemove);
+                    await $browser.windows.remove(windowId);
                 }catch(err){
                     //console.log('window-remove:> ', err);
                 }
              }
         }
 
-        chrome.windows.onRemoved.addListener(onRemove,{
+        $browser.windows.onRemoved.addListener(onRemove,{
             windowTypes: ['popup']
         });
     });

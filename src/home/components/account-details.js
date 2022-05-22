@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useState, useCallback} from "react";
 import styled from "styled-components";
 import {VisibleStyleComp} from "./styled.comp.js";
@@ -379,7 +380,7 @@ export const SearchBox = React.memo(({accountAddr='', visible}) => {
     const [value, setValue] = useState(accountDetailsB.accountAddr);
 
     const onEnterHandle = useCallback((accountName)=>{
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_GET_ACCOUNT_DETAILS_B, 
             accountId: accountName
         });       

@@ -1,4 +1,5 @@
-import React,{useState, useCallback, useLayoutEffect, useEffect} from "react";
+import $browser from "../../background/web.ext.api";
+import React,{useState, useCallback, useLayoutEffect} from "react";
 import styled from "styled-components";
 import {useRecoilValue, useRecoilState, useSetRecoilState} from 'recoil';
 import produce from "immer";
@@ -297,7 +298,7 @@ export const ConfirmModal = ()=>{
 }
 
 
-export const DeleteModal = (props) => {
+export const DeleteModal = () => {
     const [deleteData, setDeleteData] = useRecoilState(vDeleteDataX);
     const [key, setKey] = useState('');
     const [invalidKey, setInvalidKey] = useState(null);
@@ -313,13 +314,13 @@ export const DeleteModal = (props) => {
 
     const confirm = useCallback(()=>{
         if(key.length >= 64){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_VERIFY_PRIVATE_KEY,
                 publicKey: deleteData.publicKey,
                 privateKey: key
-            }, ({success, error})=>{
+            }).then(({success})=>{
                 if(success === true){
-                    chrome.runtime.sendMessage({
+                    $browser.runtime.sendMessage({
                         type: C.MSG_REMOVE_ACCOUNT,
                         removeKey: deleteData.publicKey
                     });
@@ -522,7 +523,7 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
 
     useLayoutEffect(()=>{
         const $arr = [...publicKeyListOption,...otherPubkeyListOption];
-        setPublicKeyListOptionExt($arr.map((v,i)=>{
+        setPublicKeyListOptionExt($arr.map((v)=>{
             return {...v, 
                 content: <span 
                     key={v.key} 
@@ -538,7 +539,7 @@ export const RotateModal = React.memo(({onSubmit = ()=>{}}) => {
         }));
     }, [publicKeyListOption, otherPubkeyListOption]);
 
-    const reset = useCallback((data)=>{
+    const reset = useCallback(()=>{
         setRotateData(produce((s)=>{
             s.pred = s.initial.pred;
             s.keys = s.initial.keys;

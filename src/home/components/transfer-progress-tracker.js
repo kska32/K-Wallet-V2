@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useState, useMemo, useLayoutEffect, useCallback, useRef} from "react";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import styled from "styled-components";
@@ -250,7 +251,7 @@ const StepProgressBar = React.memo(({item}) => {
 
     useLayoutEffect(()=>{
         if(item.step > 0 && item.step === item.tstep) return;
-        const listenerHandler = (message,sender,sendResponse)=>{
+        const listenerHandler = (message)=>{
             let {type,key,value} = message;
             switch(type){
                 case C.FMSG_TRANSFER_PROGRESS: {
@@ -265,10 +266,10 @@ const StepProgressBar = React.memo(({item}) => {
         }
         if(reqkey !== null && isInit.current === false){
             isInit.current = true;
-            chrome.runtime.onMessage.addListener(listenerHandler);
+            $browser.runtime.onMessage.addListener(listenerHandler);
         }
         return ()=>{
-            chrome.runtime.onMessage.removeListener(listenerHandler);
+            $browser.runtime.onMessage.removeListener(listenerHandler);
         }
     },[reqkey]);
 
@@ -534,7 +535,7 @@ const NoTransaction = styled.div`
 `;
 
 
-const LoadMoreMark = ({rootRef, style, visibleCallback, hiddenCallback}) => {
+const LoadMoreMark = ({rootRef, style, visibleCallback}) => {
     const $Mark = React.useRef();
 
     React.useLayoutEffect(()=>{
@@ -604,10 +605,10 @@ export default React.memo(({visible})=>{
 
     const onLoadMore = useCallback(()=>{
         if(hasMore){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_GET_RECENT_REQKEYS_DATA, 
                 limit: txItems.length + 5
-            }, (res)=>{
+            }).then((res)=>{
                 if(res.length !== reqkeysData.length){
                     setReqkeysData(res);
                 }else{
@@ -626,7 +627,7 @@ export default React.memo(({visible})=>{
             <div>
                 <Wrapper ref={topRef}>
                 {
-                    txItems.map((v,i,a)=>{
+                    txItems.map((v)=>{
                         let {
                             senderAccountName, senderChainId, 
                             receiverAccountName, receiverChainId,
@@ -643,13 +644,11 @@ export default React.memo(({visible})=>{
                                     if(v?.reqKey){
                                         itemRefs.current[v.key].style='margin-top: -116px; opacity: 0; z-index:0;';
                                         setTimeout(()=>{
-                                            chrome.runtime.sendMessage({
+                                            $browser.runtime.sendMessage({
                                                 type: C.MSG_REMOVE_A_TX_RESULT, 
                                                 deleteKey: v.reqKey
-                                            },(res)=>{
-                                                if(chrome.runtime.lastError){ 
-                                                    //
-                                                }else if(res === true){
+                                            }).then((res)=>{
+                                                if(res === true){
                                                     delete uniqueItemsObj[v.key];
                                                     setTxItems(Object.values(uniqueItemsObj));
                                                 }

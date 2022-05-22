@@ -1,8 +1,9 @@
-import React, {useState, useEffect, useLayoutEffect, useCallback, useMemo} from "react";
+import $browser from "../../background/web.ext.api";
+import React, {useState, useLayoutEffect, useCallback} from "react";
 import styled from "styled-components";
 import produce from "immer";
 import { Input } from 'semantic-ui-react';
-import {useRecoilState, useSetRecoilState, useRecoilValue} from "recoil";
+import {useRecoilState} from "recoil";
 import C from "../../background/constant";
 import { vPrivateKeyPageX } from "../atoms.js";
 
@@ -185,10 +186,10 @@ export default function(){
     }, [privateKeyPage.opened])
 
     const getPrivateKey = useCallback((value)=>{
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_GET_PRIVATE_KEY,
             password: value
-        }, (res)=>{
+        }).then((res)=>{
             setResult(res);
         });
     },[]);

@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useLayoutEffect, useCallback, useRef} from "react";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import { 
@@ -256,7 +257,7 @@ export default React.memo(({className, ...props}) => {
 
     useLayoutEffect(()=>{
         if(confirmData.confirmed===true){
-            chrome.runtime.sendMessage({type: C.MSG_GENERATE_RANDOM_KEYPAIR});
+            $browser.runtime.sendMessage({type: C.MSG_GENERATE_RANDOM_KEYPAIR});
             setTimeout(()=>{
                 menuBoxRef.current.scrollTo({top: 10000000, behavior: 'smooth'});
             }, 120);
@@ -265,7 +266,7 @@ export default React.memo(({className, ...props}) => {
 
     const onSelect = useCallback((v,i)=>{
         if(v.selected !== true){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_CHANGE_SELECTED_ACCOUNT,
                 selectedKey: v.publicKey
             });

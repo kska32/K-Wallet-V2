@@ -1,6 +1,7 @@
-import React,{useMemo, useLayoutEffect, useCallback} from "react";
-import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
-import {MsgidTabidHashState, vPasswordX, vHasAccount, vIsLoadingX, vState } from "../home/atoms.js";
+import $browser from "../background/web.ext.api";
+import React,{useCallback} from "react";
+import {useRecoilValue} from 'recoil';
+import {MsgidTabidHashState} from "../home/atoms.js";
 import styled from "styled-components";
 import C from "../background/constant";
 
@@ -144,15 +145,15 @@ export const Wrapper = styled.div`
     }
 `;
 
-export const GetAccountAddr = (props) => {
+export const GetAccountAddr = () => {
     const {
         origin, messageId, tabId, hash, 
         dataType, dataParam
     } = useRecoilValue(MsgidTabidHashState);
 
-    const clickHandle = useCallback((e)=>{
+    const clickHandle = useCallback(() => {
         if(!!hash){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_REQ_USERDATA_FROM_WEBPAGE,
                 tabId,
                 messageId, 

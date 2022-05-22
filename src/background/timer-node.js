@@ -1,4 +1,5 @@
-import {createTimer, createReqLogger, StateManager, sendMessageErrHandle} from "./utils";
+import $browser from "./web.ext.api";
+import {createTimer, createReqLogger, StateManager} from "./utils";
 import {
     senderReqkeyAlarmDB, receiverReqkeyAlarmDB, 
     proofAlarmDB, continueTransferAlarmDB, 
@@ -63,7 +64,7 @@ export async function AutoLocker(){
                         });
                     }
                 }else{
-                    chrome.runtime.sendMessage({
+                    $browser.runtime.sendMessage({
                         type: C.FMSG_LOCK_PROGRESS_STATE, 
                         value: percent 
                     });

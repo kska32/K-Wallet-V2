@@ -1,8 +1,8 @@
-
+import $browser from "../background/web.ext.api";
 import C from "../background/constant";
 import {CheckTypeSigningCmd} from '../background/utils';
 
-if(!!chrome?.runtime?.id){
+if(!!$browser?.runtime?.id){
     //ISOLATED WORLD
     window.addEventListener('message', (event)=>{
         if (event.source !== window) return;
@@ -11,7 +11,7 @@ if(!!chrome?.runtime?.id){
             const {screen} = window;
             const {messageId} = event.data;
 
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_REQ_USERDATA_FROM_WEBPAGE, 
                 messageId,
                 screen:{
@@ -22,14 +22,14 @@ if(!!chrome?.runtime?.id){
                 },
                 dataType: event.data.dataType,
                 dataParam: event.data.dataParam
-            },()=>{
-                if(chrome.runtime.lastError){ }
+            }).catch((err)=>{
+                //
             });
             
             const resHandle = (message,sender,sendResponse)=>{
                 if(message.type === C.MSG_OPEN_POPUP_WINDOW_RESPONSE){
                     if(message.messageId === messageId){
-                        chrome.runtime.onMessage.removeListener(resHandle);
+                        $browser.runtime.onMessage.removeListener(resHandle);
                         window.postMessage(message);
                         sendResponse(true)
                     }
@@ -37,7 +37,7 @@ if(!!chrome?.runtime?.id){
                 return true;
             };
 
-            chrome.runtime.onMessage.addListener(resHandle);
+            $browser.runtime.onMessage.addListener(resHandle);
         }
     });
 }else{

@@ -1,9 +1,10 @@
+import $browser from "../background/web.ext.api";
 import React,{Suspense, useState, useCallback, useLayoutEffect, useEffect} from "react";
 import {RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import {
     vPageNumX, vPasswordX, vHasAccount, vIsLoadingX,  
     vGlobalErrorDataX, vReceiverAddrListX, vState, 
-    vRecentReqkeysData
+    vRecentReqkeysData, tLockbarState
 } from "./atoms.js";
 
 import C from "../background/constant";
@@ -44,6 +45,7 @@ export const Main = React.memo((props)=>{
     const setGErrData = useSetRecoilState(vGlobalErrorDataX);
     const setReceiverAddrList = useSetRecoilState(vReceiverAddrListX);
     const setReqkeysData = useSetRecoilState(vRecentReqkeysData);
+    const setLockbarState = useSetRecoilState(tLockbarState);
 
     useEffect(()=>{
         InitTimerNode();
@@ -52,7 +54,7 @@ export const Main = React.memo((props)=>{
     },[]);
 
     useLayoutEffect(()=>{
-        chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+        $browser.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
             switch(msg.type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
                     delete msg.type;
@@ -74,15 +76,19 @@ export const Main = React.memo((props)=>{
                             break;
                         }
                         case 1:{
-                            chrome.runtime.sendMessage({
+                            $browser.runtime.sendMessage({
                                 type: C.MSG_GET_RECENT_REQKEYS_DATA, 
                                 limit: 1
-                            }, (res) => { 
+                            }).then((res) => { 
                                 setReqkeysData(res); 
                             });
                             break;
                         }
                     }
+                    break;
+                }
+                case C.FMSG_LOCK_PROGRESS_STATE:{
+                    setLockbarState(msg.value);
                     break;
                 }
                 case C.FMSG_RECEIVER_ADDR_LIST_UPDATED: {
@@ -107,7 +113,7 @@ export const Main = React.memo((props)=>{
     const changeAccountKeysetOnSubmit = useCallback(function({
         senderAccountName, senderChainId, keys, pred
     }){
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_CHANGE_ACCOUNT_KEYSET,
             ...arguments[0]
         });

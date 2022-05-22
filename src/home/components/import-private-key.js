@@ -1,7 +1,8 @@
+import $browser from "../../background/web.ext.api";
 import React, {useState, useLayoutEffect, useCallback} from "react";
 import styled from "styled-components";
 import produce from "immer";
-import {useRecoilState, useSetRecoilState} from "recoil";
+import {useRecoilState} from "recoil";
 import { vImportPrikeyPageX } from "../atoms.js";
 import { Input } from 'semantic-ui-react';
 import C from "../../background/constant";
@@ -122,9 +123,9 @@ export default function(){
     const [text, setText] = useState('');
     const [publickey, setPublickey] = useState('');
 
-    const confirmOnClick = useCallback((props) => {
+    const confirmOnClick = useCallback(() => {
         if(text.length >= 64){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_IMPORT_PRIVATE_KEY,
                 privateKey: text
             });

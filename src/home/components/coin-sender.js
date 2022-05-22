@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useState, useEffect, useLayoutEffect, useCallback, useMemo} from "react";
 import styled from "styled-components";
 import {produce,original} from "immer";
@@ -426,7 +427,7 @@ export default React.memo(function CoinSender({visible}){
                 s.push({text: vu, value: vu, key: s.length + 1});
             }
         }));
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_UPSERT_A_RECEIVER_ADDR, 
             receiverAccountName: vu
         });
@@ -450,7 +451,7 @@ export default React.memo(function CoinSender({visible}){
                 <span className={'remove' + ((!!+c.owner) ? ' disabled' : '')} 
                     onClick={(e)=>{
                         e.stopPropagation();
-                        chrome.runtime.sendMessage({
+                        $browser.runtime.sendMessage({
                             type: C.MSG_REMOVE_RECEIVER_ACCOUNT_NAME,
                             accountName: c.text
                         });

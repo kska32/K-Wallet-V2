@@ -1,3 +1,4 @@
+import $browser from "./web.ext.api";
 import C from "./constant";
 
 export function pushNoti(txid, param){
@@ -17,7 +18,7 @@ export function pushNoti(txid, param){
             break;
     }
 
-    let args = [
+    const args = [
         txid, 
         {
             type: 'basic',
@@ -26,16 +27,15 @@ export function pushNoti(txid, param){
             message,
             priority: 2,
             eventTime: Date.now(),
-            contextMessage: 'K-Wallet V2'
-        }, 
-        (id)=>{
-            //
+            contextMessage: 'k:wallet'
         }
     ];
 
-    chrome.notifications.create(...args);
+    $browser.notifications.create(...args).then((id)=>{
+        //...
+    });
     /*
-    chrome.notifications.onClicked.addListener((reqkey)=>{
+    $browser.notifications.onClicked.addListener((reqkey)=>{
         const exploreLink = (reqKey,networkId)=>{
             const networkName = networkId.indexOf("mainnet") > -1 ? 'mainnet' : 'testnet';
             return  `https://explorer.chainweb.com/${networkName}/tx/${reqKey}`;

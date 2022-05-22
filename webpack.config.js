@@ -4,6 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ChromeExtensionReloader  = require('webpack-chrome-extension-reloader');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const TitleName = 'k:wallet';
@@ -34,6 +35,7 @@ module.exports = {
         assetModuleFilename: 'assets/[hash][ext][query]'
     },
     plugins: [
+        new ESLintPlugin({}),
         new CleanWebpackPlugin(),
         new NodePolyfillPlugin(),
         new CopyWebpackPlugin({
@@ -65,12 +67,6 @@ module.exports = {
     ].filter(Boolean),
     module: {
         rules: [
-            {
-                enforce: 'pre',
-                test: /\.(js|jsx)$/i,
-                exclude: /node_modules/,
-                loader: 'eslint-loader',
-            },
             {
                 test: /\.(js|jsx)$/i,
                 exclude: /node_modules/,

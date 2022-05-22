@@ -1,4 +1,5 @@
-import React,{Suspense, useState, useCallback, useLayoutEffect, useEffect} from "react";
+import $browser from "../background/web.ext.api";
+import React,{Suspense, useState, useLayoutEffect} from "react";
 import ReactDOM from 'react-dom/client';
 import styled from "styled-components";
 import "./index.scss";
@@ -81,11 +82,11 @@ const HasNoAccountAlert = ()=>{
 }
 
 
-const Main = React.memo((props) => {
+const Main = React.memo(() => {
     const syncBackgroundState = useSetRecoilState(vState);
     const password = useRecoilValue(vPasswordX);
     const hasAccount = useRecoilValue(vHasAccount);
-    const [isLoading,setLoading] = useRecoilState(vIsLoadingX);
+    const isLoading = useRecoilValue(vIsLoadingX);
     const [msgTabHahsId, setMsgTabHashId] = useRecoilState(MsgidTabidHashState);
     const [pageType, setPageType] = useState("");
 
@@ -106,7 +107,7 @@ const Main = React.memo((props) => {
 
     useLayoutEffect(()=>{
         AutoLocker();
-        chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+        $browser.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
             const {type} = msg;
             switch(type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
@@ -134,8 +135,8 @@ const Main = React.memo((props) => {
             }[pageType]??<Nothing><ErrorOutlineIcon/></Nothing>
         }
         <LoadingBox 
-            isLoading={isLoading.opened} 
-            loadingText={isLoading.text} 
+            isLoading={isLoading?.opened} 
+            loadingText={isLoading?.text} 
             timestamp={isLoading?.timestamp??null}
         />
         {hasAccount !== true && <HasNoAccountAlert />}

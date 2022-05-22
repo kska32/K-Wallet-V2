@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React from "react";
 import {useLayoutEffect, useState} from "react";
 import styled from "styled-components";
@@ -78,7 +79,7 @@ export const LoadingBox = ({isLoading, loadingText, timestamp}) => {
 
     useLayoutEffect(()=>{
         const fn = ()=>{
-            chrome.storage.local.set({
+            $browser.storage.local.set({
                 isLoading:{
                     opened: false, 
                     text: null, 

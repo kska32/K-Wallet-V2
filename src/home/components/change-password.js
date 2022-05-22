@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React,{useState, useCallback, useLayoutEffect, useMemo} from "react";
 import styled from "styled-components";
 import {useRecoilState} from "recoil";
@@ -228,14 +229,14 @@ export default function ChangePassword({visible, ...props}){
 
     useLayoutEffect(()=>{
         if(pass1.length >= 8){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_VALIDATE_CURRENT_PASSWORD, 
                 currentPassword: pass1
-            },(res)=>{
+            }).then((res)=>{
                 setValidateRes(produce((s)=>{
                     s.same = res.matched === true;
                 }));
-            })
+            });
         }else{
             setValidateRes(produce((s)=>{
                 s.same = false;
@@ -244,7 +245,7 @@ export default function ChangePassword({visible, ...props}){
     }, [pass1]);
 
     const ConfirmOnClick = useCallback((pass1, pass2)=>{
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_CHANGE_PASSWORD,
             currentPassword: pass1,
             newPassword: pass2

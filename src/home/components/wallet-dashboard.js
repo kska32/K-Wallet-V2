@@ -1,4 +1,5 @@
-import React, {useState, useLayoutEffect, useCallback, useEffect} from "react";
+import $browser from "../../background/web.ext.api";
+import React, {useState, useLayoutEffect, useCallback} from "react";
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import styled from "styled-components";
 import C from "../../background/constant";
@@ -7,7 +8,7 @@ import {
     vNetworkIdX, vLockupX, vAccAddrX, vAccountDetailsX, 
     vPageNumX, vSidebarOpenedX, vKdaPriceX, 
     vTokenAddressX, vTokenAddressListX, vIsDarkX,
-    tLastOnePageOpened
+    tLastOnePageOpened, tLockbarState
 } from "../atoms.js";
 
 import CoinSender from "./coin-sender.js";
@@ -275,24 +276,10 @@ const LockProgressBarStyle = styled.div`
 `;
 
 export const LockProgressBar = React.memo(({className, ...props}) => {
-    const [pstate, setPstate] = useState(100);
-
-    useLayoutEffect(()=>{
-        const fn = (msg)=>{
-            if(msg.type === C.FMSG_LOCK_PROGRESS_STATE){
-                setPstate(msg.value);
-            }
-            return true;
-        };
-        chrome.runtime.onMessage.addListener(fn);
-
-        return ()=>{
-            chrome.runtime.onMessage.removeListener(fn);
-        }
-    }, []);
+    const lockbarValue = useRecoilValue(tLockbarState);
 
     return <LockProgressBarStyle interval={5} className={className} id='lock-progress-bar' >
-        <div className='bar' style={{width: pstate + '%'}}></div>
+        <div className='bar' style={{width: lockbarValue + '%'}}></div>
     </LockProgressBarStyle>
 });
 
@@ -319,7 +306,7 @@ export default function({visible}){
     },[]);
 
     const refreshAccountDetails = useCallback(()=>{
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_GET_ACCOUNT_DETAILS, 
             accountId: accountAddr
         });       
@@ -359,7 +346,7 @@ export default function({visible}){
                             style={{minWidth:'136px'}}
                             onChange={onTokenAddressChange}
                             refreshOnClick={async()=>{
-                                await chrome.runtime.sendMessage({
+                                await $browser.runtime.sendMessage({
                                     type: C.MSG_UPDATE_FUNGIBLE_V2_TOKEN_ADDR_LIST
                                 });   
                             }}

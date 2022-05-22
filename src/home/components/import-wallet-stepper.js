@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React,{useState,useCallback, useLayoutEffect} from "react";
 import produce from 'immer';
 import styled from "styled-components";
@@ -515,7 +516,7 @@ export default function(props){
     const onNext = useCallback(async (ok)=>{
         if(ok){
             let keypair = createMnemonic().mnemonicToKeypair(valid.mnemonic);
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_SAVE_PASS,
                 keypairHex: keypair.hex,
                 password: passwordR

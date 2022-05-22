@@ -16,9 +16,7 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import qrScanSvg from "../images/qr-scan-icon.svg";
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined';
-import {isObject, isString} from "../../background/utils";
 
 
 const $CopiesButton = styled.div`
@@ -232,7 +230,7 @@ export const RippleButton = React.memo(({children, onClick, ...props})=>{
 
 //* ***********StatusButton************* */
 
-const useStatusButtonStyles = makeStyles((theme) => ({
+const useStatusButtonStyles = makeStyles(() => ({
     'CaNameBt': {
         'width': '260px',
         'height': '37px',
@@ -1101,7 +1099,7 @@ const AutoLockerSetterStyle = styled.span`
     }
 `;
 
-export const AutoLockerSetter = (props) => {
+export const AutoLockerSetter = () => {
 
     return <AutoLockerSetterStyle>
         <input type='number' defaultValue={15} min="1" max="180" maxLength="3" />

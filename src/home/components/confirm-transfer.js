@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useCallback} from "react";
 import styled from "styled-components";
 import produce from "immer";
@@ -115,7 +116,7 @@ export default function({transferOpt, visible, cancelConfirm}){
     
     const TransferConfirm = useCallback(() => {
         setLoading({opened: true});
-        chrome.runtime.sendMessage({
+        $browser.runtime.sendMessage({
             type: C.MSG_JUST_TRANSFER, 
             transferOpt
         });        

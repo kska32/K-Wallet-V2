@@ -1,32 +1,23 @@
+import $browser from "../background/web.ext.api";
 import {atom,selector} from 'recoil';
 import C from "../background/constant";
 
-const promiseSendMessage = (msg) => {
-    return new Promise((resolve,reject)=>{
-        chrome.runtime.sendMessage(msg, (state)=>{
-            if(chrome.runtime.lastError){
-                reject(chrome.runtime.lastError.message)
-            } 
-            resolve(state);
-        });
-    })
-}
 
 export const vState = atom({
     key: 'vState',
-    default: promiseSendMessage({type: C.MSG_GET_STATE})
+    default: $browser.runtime.sendMessage({type: C.MSG_GET_STATE})
 }); 
 
 
 export const vHasAccount = atom({
     key: 'vHasAccount',
-    default: promiseSendMessage({type: C.MSG_HAS_ACCOUNT})
+    default: $browser.runtime.sendMessage({type: C.MSG_HAS_ACCOUNT})
 });
 
 
 export const vRecentReqkeysData = atom({
     key: 'vRecentReqkeysData',
-    default: promiseSendMessage({type: C.MSG_GET_RECENT_REQKEYS_DATA}),
+    default: $browser.runtime.sendMessage({type: C.MSG_GET_RECENT_REQKEYS_DATA}),
 });
 
 
@@ -53,6 +44,11 @@ export const tBackButton = atom({
 export const tLastOnePageOpened = atom({
     key: 'last-one-page',
     default: false
+});
+
+export const tLockbarState = atom({
+    key: 'lockbar-state',
+    default: 100
 })
 
 
@@ -62,7 +58,7 @@ export const vStateX = selector({
     key: 'vStateX',
     get: ({get}) => get(vState),
     set: ({get, set}, newValue)=>{
-        chrome.runtime.sendMessage({ type: C.MSG_SET_STATE, value: newValue });
+        $browser.runtime.sendMessage({ type: C.MSG_SET_STATE, value: newValue });
         set(vState, {...get(vState), ...newValue}); 
     }
 });
@@ -72,7 +68,7 @@ const AtomHelper = (keyName, msgType=null, Atom=vStateX)=>({
     get: ({get}) => get(Atom)?.[keyName],
     set: ({get,set}, newValue) => {
         if(!!msgType){
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: msgType,
                 [keyName]: newValue
             });
@@ -86,7 +82,7 @@ export const vLockupX = selector({
     get: ({get}) => !!get(vStateX)?.password,
     set: ({get,set}, newValue) => {
         if(newValue===true){
-            chrome.runtime.sendMessage({ type: C.MSG_LOCK_UP });
+            $browser.runtime.sendMessage({ type: C.MSG_LOCK_UP });
         }
     }
 });
@@ -187,5 +183,5 @@ export const vGetPublickeyListOptionX2 = selector({
 
 export const vGetAppInfo = selector({
     key: 'get-app-information',
-    get: ({get}) => chrome.runtime.getManifest()
+    get: ({get}) => $browser.runtime.getManifest()
 });

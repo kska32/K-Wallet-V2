@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useMemo} from "react";
 import styled from "styled-components";
 import {produce} from "immer";
@@ -130,7 +131,7 @@ export default function({errorData, visible}){
                             s.xtransfer = null;
                             s.details = null;
                         }));
-                        chrome.runtime.sendMessage({
+                        $browser.runtime.sendMessage({
                             type: C.MSG_CONTINUE_ERROR_TRANSFER,
                             reqkey: errorData.details.reqKey
                         });

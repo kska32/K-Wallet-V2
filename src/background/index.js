@@ -1,6 +1,6 @@
 /* eslint-disable func-names */
 /* eslint-disable no-unused-vars */
-
+import $browser from "./web.ext.api";
 import {keypairsDB, reqkeysDB, accountNamesDB, userOptionsDB} from "./localdb";
 import C, {BackgroundState, defaultTokenAddressList} from "./constant";
 import restApi from "./rest.api";
@@ -24,7 +24,7 @@ import {
 const Transfer = restApi();
 const deepCopy = o => JSON.parse(JSON.stringify(o));
 
-chrome.runtime.onInstalled.addListener(async()=>{
+$browser.runtime.onInstalled.addListener(async()=>{
     let state = deepCopy(BackgroundState);
     state.networkId = (await userOptionsDB.getItem('networkId'))?.networkId??state.networkId;
     await StateManager.set(state); 
@@ -532,7 +532,11 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
         case C.FMSG_TRANSFER_PROGRESS:{
             //转发
             const { type, key, value } = message;
-            chrome.runtime.sendMessage({type, key, value}, sendMessageErrHandle);
+            $browser.runtime.sendMessage({
+                type, key, value
+            }).catch((err) => {   
+                //...
+            });
             break;
         }
         case C.MSG_SET_DARK_MODE:{
@@ -580,7 +584,7 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
                 const realHash = sha512(JSON.stringify({messageId, password}));//x?
                 const windowId = sender.tab.windowId;
                 if(hash === realHash){
-                    chrome.tabs.sendMessage(
+                    $browser.tabs.sendMessage(
                         tabId,
                         {
                             type: C.MSG_OPEN_POPUP_WINDOW_RESPONSE,
@@ -592,7 +596,7 @@ async function MessageListener(message, sender = null, sendResponse = ()=>{}){
                             })
                          }
                     );
-                    chrome.windows.remove(windowId);
+                    $browser.windows.remove(windowId);
                 }else{
                     //console.log("hash not matched.");
                     //console.log(hash, realHash);
@@ -696,7 +700,7 @@ async function getAccountDetails(accountId, networkId, tokenAddress){
 }
 
 
-chrome.runtime.onMessage.addListener((msg,sender,sendResponse) => {
+$browser.runtime.onMessage.addListener((msg,sender,sendResponse) => {
     //console.log("message.type:", msg.type, ", message.content:", msg);
     MessageListener(msg, sender, sendResponse).catch((err)=>{
         //console.error("MessageListener - Error: ", err);
@@ -706,74 +710,72 @@ chrome.runtime.onMessage.addListener((msg,sender,sendResponse) => {
 });
 
 
-chrome.storage.onChanged.addListener((changes)=>{
+$browser.storage.onChanged.addListener((changes)=>{
     let newState = Object.keys(changes).reduce((a,k,i)=>{
         a[k] = changes[k]['newValue'];
         return a;
     }, {});
-    chrome.runtime.sendMessage({
+    $browser.runtime.sendMessage({
         type: C.FMSG_SYNC_BACKGROUND_STATE, 
         ...newState 
-    }, sendMessageErrHandle);
+    }).catch((error)=>{
+        //if(!(error?.message??'').includes("Could not establish")){
+            //console.error(error.message);
+        //}
+    });
 });
 
 
-chrome.action.onClicked.addListener((activeTab)=>{
+$browser.action.onClicked.addListener((activeTab)=>{
     createNewTab();
 });
 
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
+$browser.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
     if(changeinfo.status === 'complete'){
         //ISOLATED-WORLD
-        chrome.scripting.registerContentScripts(
-            [
+        $browser.scripting.registerContentScripts([
                 {
                     id: 'k-wallet-scripting-id',
                     js: ['scripting/index.js'],
                     matches: ["<all_urls>"],
                     runAt: "document_start"
                 }
-            ],
-            ()=>{
-                if(chrome.runtime.lastError){
-                    //Error: Duplicate script ID 'k-wallet-scripting-id'
-                }
-            }
-        );
+        ]).catch((err)=>{
+            //Error: Duplicate script ID 'k-wallet-scripting-id'
+        });
       
         //MAIN-WORLD
-        chrome.scripting.executeScript(
+        $browser.scripting.executeScript(
             {
               target: {tabId},
               files: ['scripting/index.js'],
               world: 'MAIN'
-            },
-            ()=>{
-                if(chrome.runtime.lastError){
-                    //Error: Duplicate script ID 'k-wallet-scripting-id'
-                }
             }
-        );
+        ).catch((err)=>{
+            //Error: Duplicate script ID 'k-wallet-scripting-id'
+        });
     }
 });
 
 
 const createNewTab = () => {
     const homepath = "home/index.html";
-    findTabAndHighlightByUrl(`chrome-extension://${chrome.runtime.id}/${homepath}`, async(isExist,thetabid) => {
-        if(!isExist){
-            await userOptionsDB.getItem('autoLockupTime').then((res)=>{
-                const endTime = res?.autoLockupTime?.endTime??0;
-                if(endTime !== 0 && endTime < Date.now()){
-                    MessageListener({type: C.MSG_LOCK_UP});
-                }
-            });
-            createTabCompletely({url: homepath},(tab)=>{
-                //open or highlighted then ...
-            });
-        }
-    });
+    findTabAndHighlightByUrl(`chrome-extension://${$browser.runtime.id}/${homepath}`)
+        .then(([isExist, thetabid]) => {
+            if(!isExist){
+                userOptionsDB.getItem('autoLockupTime').then((res)=>{
+                    const endTime = res?.autoLockupTime?.endTime??0;
+                    if(endTime !== 0 && endTime < Date.now()){
+                        MessageListener({type: C.MSG_LOCK_UP});
+                    }
+                }).then(()=>{
+                    createTabCompletely({url: homepath},(tab)=>{
+                        //open or highlighted then ...
+                    });
+                })
+            }
+        });
 }
 
 

@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React, {useState, useCallback, useLayoutEffect} from "react";
 import styled from "styled-components";
 import C from "../../background/constant";
@@ -126,7 +127,7 @@ const ButtonGroup = styled.div`
 `;
 
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
     button: {
       'backgroundColor': '#000',
       '&:hover': {
@@ -168,15 +169,16 @@ export default function({visible, style={}}){
     const [pass, setPass] = useState('');
     const [isIncorrect, setIncorrect] = useState(false);
     
-    const verifyPassword = useCallback(async(password)=>{
-        chrome.runtime.sendMessage({ 
+    const verifyPassword = useCallback((password) => {
+        $browser.runtime.sendMessage({ 
             type: C.MSG_VERIFY_PASSWORD, 
             value: {password} 
-        }, (res)=>{
-            if(chrome.runtime.lastError){ } 
+        }).then((res)=>{
             if(res?.success === false){
                 setIncorrect(true);
             }
+        }).catch((err)=>{
+            //...
         });
     }, []);
 

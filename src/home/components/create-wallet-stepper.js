@@ -1,3 +1,4 @@
+import $browser from "../../background/web.ext.api";
 import React,{useState,useCallback,useLayoutEffect} from "react";
 import produce from 'immer';
 import styled from "styled-components";
@@ -13,7 +14,6 @@ import Button from '@material-ui/core/Button';
 import LooksOneIcon from '@material-ui/icons/LooksOne';
 import LooksTwoIcon from '@material-ui/icons/LooksTwo';
 import Looks3Icon from '@material-ui/icons/Looks3';
-import Looks4Icon from '@material-ui/icons/Looks4';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -462,7 +462,7 @@ function StepperBody03({setValid}){
             if(c){//助记符确认
                 s['mnemonic'] = mnemonic03.join(' ');
                 //s['keypairHex'] = createMnemonic().mnemonicToKeypair(s['mnemonic']).hex;
-                //chrome.storage.local.set({keypairHex: s['keypairHex']});
+                //$browser.storage.local.set({keypairHex: s['keypairHex']});
             }
         }));
     }, [mnemonic02,mnemonic03]);
@@ -547,7 +547,7 @@ function StepperBody04({setValid}){
     const onSendMessage = useCallback(async (setCheckStatus, xAccountName)=>{
         let opt = {
             senderAccountName: xAccountName,
-            keypairs: await chrome.storage.local.get("keypairHex"),
+            keypairs: await $browser.storage.local.get("keypairHex"),
             networkId: 'mainnet01', 
         };
         
@@ -677,7 +677,7 @@ export default function(props){
     const onNext = useCallback(async (ok)=>{
         if(ok){
             let keypair = createMnemonic().mnemonicToKeypair(valid.mnemonic);
-            chrome.runtime.sendMessage({
+            $browser.runtime.sendMessage({
                 type: C.MSG_SAVE_PASS,
                 keypairHex: keypair.hex,
                 password: passwordConfirm
