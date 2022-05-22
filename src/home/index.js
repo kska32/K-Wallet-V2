@@ -1,5 +1,5 @@
 import $browser from "../background/web.ext.api";
-import React,{Suspense, useState, useCallback, useLayoutEffect, useEffect} from "react";
+import React,{Suspense, useCallback, useLayoutEffect, useEffect} from "react";
 import {RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import {
     vPageNumX, vPasswordX, vHasAccount, vIsLoadingX,  
@@ -54,7 +54,7 @@ export const Main = React.memo((props)=>{
     },[]);
 
     useLayoutEffect(()=>{
-        $browser.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+        $browser.runtime.onMessage.addListener((msg,sender)=>{
             switch(msg.type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
                     delete msg.type;

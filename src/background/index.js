@@ -705,7 +705,7 @@ $browser.runtime.onMessage.addListener((msg,sender,sendResponse) => {
     MessageListener(msg, sender, sendResponse).catch((err)=>{
         //console.error("MessageListener - Error: ", err);
         StateManager.set({isLoading: {opened: false, text: null}});
-    })
+    });
     return true;
 });
 

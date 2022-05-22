@@ -107,7 +107,7 @@ const Main = React.memo(() => {
 
     useLayoutEffect(()=>{
         AutoLocker();
-        $browser.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+        $browser.runtime.onMessage.addListener((msg,sender)=>{
             const {type} = msg;
             switch(type){
                 case C.FMSG_SYNC_BACKGROUND_STATE:{
