@@ -15,7 +15,6 @@ import {
     isValidKey,
     StateManager,
     findTabAndHighlightByUrl,
-    sendMessageErrHandle,
     openPopupWindow,
     dataGeneratorForPopup,
     objectify
