@@ -733,23 +733,25 @@ $browser.action.onClicked.addListener((activeTab)=>{
 $browser.tabs.onUpdated.addListener(function(tabId, changeinfo, tab){
     if(changeinfo.status === 'complete'){
         //ISOLATED-WORLD
+        //contentScripts.register()
         $browser.scripting.registerContentScripts([
-                {
-                    id: 'k-wallet-scripting-id',
-                    js: ['scripting/index.js'],
-                    matches: ["<all_urls>"],
-                    runAt: "document_start"
-                }
+            {
+                id: 'k-wallet-scripting-id',
+                js: ['scripting/index.js'],
+                matches: ["<all_urls>"],
+                runAt: "document_start"
+            }
         ]).catch((err)=>{
             //Error: Duplicate script ID 'k-wallet-scripting-id'
         });
       
         //MAIN-WORLD
+        //browser.tabs.executeScript()
         $browser.scripting.executeScript(
             {
-              target: {tabId},
-              files: ['scripting/index.js'],
-              world: 'MAIN'
+                target: {tabId},
+                files: ['scripting/index.js'],
+                world: 'MAIN'
             }
         ).catch((err)=>{
             //Error: Duplicate script ID 'k-wallet-scripting-id'
