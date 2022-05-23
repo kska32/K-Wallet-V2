@@ -168,8 +168,8 @@ const TxTransferInfoView = ({details}) => {
             </div>
             <div className='to'>
                 <div className='tag'>To: </div>
-                <div>{receiverAccountName || senderAccountName}</div>
-                <div>ChainId: {receiverChainId || senderChainId}</div>
+                <div>{receiverAccountName ?? senderAccountName}</div>
+                <div>ChainId: {receiverChainId ?? senderChainId}</div>
             </div>
             <div className='amount'>
                 <div className='tag'>Amount: </div>
@@ -215,15 +215,15 @@ export default function({infoData, visible}){
         <div className='title'>Transaction</div>
             <div className='networkId'>
                 <div className='tag'>NetworkId: </div>
-                <div>{networkId||''}</div>
+                <div>{networkId??''}</div>
             </div>
             <div className='tokenAddress'>
                 <div className='tag'>tokenAddress: </div>
-                <div>{tokenAddress||'coin'}</div>
+                <div>{tokenAddress??'coin'}</div>
             </div>
             <div className='reqkey'>
                 <div className='tag'>Reqkey: </div>
-                <div>{reqkey||''}</div>
+                <div>{reqkey??''}</div>
             </div>
 
             {txType === C.TX_SAME_TRANSFER && <TxTransferInfoView details={details} />}
@@ -232,7 +232,7 @@ export default function({infoData, visible}){
 
             <div className='maxfee'>
                 <div className='tag'>MaxTransactionFee:</div>
-                <div>{(gasPrice||0) * (gasLimit||0)}</div>
+                <div>{(gasPrice ?? 0) * (gasLimit ?? 0)}</div>
             </div>
             <div style={{flex:1}}></div>
             <div className='cancel'>
