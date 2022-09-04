@@ -202,9 +202,9 @@ export const BackgroundState = {
             gasPayingAccountA: '',
             gasPayingAccountB: '',
             gasPrice: 0.00000001,
-            gasLimit: 600,
-            xGasPrice: undefined,
-            xGasLimit: undefined,
+            gasLimit: 1800,
+            xGasPrice: 0.00000001,
+            xGasLimit: 750,
             ttl: 28800
         },
         senderAddrList: [], //[{text: 'k:'+v.key, value: 'k:'+v.key, key: i+1},..]

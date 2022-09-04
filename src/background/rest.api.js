@@ -240,7 +240,7 @@ export default function(){
         networkId, 
         tokenAddress,
         gasPrice = 1e-8, 
-        gasLimit = 600, 
+        gasLimit = 2000, 
         ttl = 28800
     }){
         let param = {...arguments[0], txType: C.TX_ROTATE};

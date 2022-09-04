@@ -11,9 +11,9 @@ export default function({
     receiverChainId,
     networkId = 'testnet04',
     gasPrice = 0.000001, 
-    gasLimit = 600, 
+    gasLimit = 1800, 
     xGasPrice = 0.00000001,
-    xGasLimit = 400,
+    xGasLimit = 750,
     ttl = 28800,
     tokenAddress = 'coin',
     interfaces = []

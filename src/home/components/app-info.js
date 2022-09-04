@@ -159,7 +159,7 @@ export default function AppInfo({visible, ...props}){
                     <a href="https://chrome.google.com/webstore/detail/bfjdmoniilmnfleebdfpcchhjbmdffil" target='_blank'><ThumbUpIcon/></a>
                     <a href="https://t.me/sparrow32k" target='_blank'><TelegramIcon /></a>
                     <a href={`mailto:${author}`} target='_blank'><EmailIcon /></a>
-                    <a href="https://github.com/kska32/K-Wallet" target='_blank'><GitHubIcon /></a>
+                    <a href="https://github.com/kska32/K-Wallet-V2" target='_blank'><GitHubIcon /></a>
                 </div>
             </div>
         </div>
